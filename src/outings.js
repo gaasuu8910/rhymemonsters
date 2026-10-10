@@ -159,7 +159,7 @@ $('outLesson').addEventListener('click', () => { $('outModal').hidden = true; op
 /* =========================================================
    服屋 STREET THREADS
    ========================================================= */
-const GAME_URL = 'https://claude.ai/artifact/SVh3oyaJDdMbsqLUF8jXJx';
+const GAME_URL = 'https://gaasuu8910.github.io/rhymemonsters/';
 // the best rhyme you landed this battle / run, for share cards and posts
 function bestLine() { const b = G.best; if (!b) return null; return { w: b.w, a: b.a, lab: (SLAM[b.g] || ['', ''])[0] }; }
 const SH = { tab: 'head', sel: null, prev: null };
