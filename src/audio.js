@@ -266,7 +266,7 @@ const SFX = {
   nom(i) { if (!A.ac) return; const t = ACT(), f = midi(72 + [0, 2, 4, 7, 9, 12, 14, 16, 19, 21, 24][i % 11]); const o = O('square', f, t, .12), g = G_(), fl = F('lowpass', 2200); env(g, t, .002, .1, .1); chain(o, fl, g, A.sfx); const n = N(t, .05), g2 = G_(); env(g2, t, .001, .12, .04); chain(n, F('bandpass', 900, 2), g2, A.sfx); },
   // the hit lands on the beat, in the song's key: chord tones of the current bar, climbing with the combo
   grade(g) { if (!A.ac) return; if (g <= 0) return; const s16 = sixteenth(), tq = Seq.next + (Seq.step % 2 ? 0 : s16), t = Math.max(ACT(), toAC(tq)), tr = (Seq.track && Seq.track.tr) || 0;
-    const ch = PROG[Math.floor(Seq.step / 16) % 4].map(n => n + tr + 12), tones = [...ch, ...ch.map(n => n + 12), ...ch.map(n => n + 24)], c0 = Math.min(4, Math.floor(((G && G.combo) || 0) / 3));
+    const ch = PROG[Math.floor(Seq.step / 16) % 4].map(n => n + tr + 12), tones = [...ch, ...ch.map(n => n + 12), ...ch.map(n => n + 24), ...ch.map(n => n + 36)], c0 = Math.min(4, Math.floor(((G && G.combo) || 0) / 3));
     for (let i = 0; i < Math.min(g, 4); i++) S.bell(t + i * s16 * .5, tones[c0 + i], .1, .45);
     if (g >= 4) S.stab(t, ch.map(n => n + 12), .16); if (g === 5) { S.crash(t, .16); for (let i = 0; i < 6; i++) S.bell(t + s16 * 2 + i * s16 * .25, tones[c0 + 2 + (i % 4)] + 12, .05, .35); } },
   // crowd: a wash of band-passed noise (voices), random whistles, scattered claps — bigger p = bigger cheer

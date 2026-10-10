@@ -903,6 +903,9 @@ function onBeat(e) {
 const cA = new THREE.Color(), cB = new THREE.Color(), cC = new THREE.Color();
 let last = performance.now();
 function loop(now) {
+  requestAnimationFrame(loop); try { loopBody(now); } catch (e) { console.error(e); }
+}
+function loopBody(now) {
   const dt = Math.min(.05, (now - last) / 1000); last = now; T += dt;
   if (G.started) seqTick();
   while (Seq.events.length && Seq.events[0].t <= AT()) onBeat(Seq.events.shift());
@@ -1010,7 +1013,6 @@ function loop(now) {
   if (rig && rig.crack) rig.crack.emissiveIntensity = G.bar * 2.2 * (1 + skyU.uKick.value * .6);
   composer ? composer.render() : renderer.render(scene, camera);
   if (typeof photoCapture === 'function') photoCapture();
-  requestAnimationFrame(loop);
 }
 
 /* =========================================================
