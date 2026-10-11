@@ -1295,6 +1295,27 @@ body:has(#tut:not([hidden])) .console, body:has(#tut:not([hidden])) .cmd { displ
 .codecard .cbt { display: flex !important; gap: 8px; } .codecard .cbt .go { flex: 1; font-size: 16px; padding: 12px 8px; }
 .pro input.prn { flex: 1; min-width: 0; font: 400 16px var(--f-jp); padding: 8px 12px; border-radius: 8px; border: 2px solid #D4FF3A; background: var(--bone); color: var(--ink); }
 .pro .prnw { display: flex; align-items: center; gap: 6px; } .pro .prnw b { font: 800 16px var(--f-disp); color: var(--bone); }
+
+/* v67 title: はじめから / 続きから */
+.op-cont { position: absolute; right: clamp(16px, 4vw, 72px); top: 50%; transform: translateY(-50%); width: min(440px, calc(100% - 32px)); box-sizing: border-box; background: rgba(11,11,20,.95); border: 2px solid var(--ink-3); padding: 22px; display: grid; gap: 12px; z-index: 5; box-shadow: 8px 8px 0 #7A2BFF; }
+.op-cont h2 { margin: 0; font: 400 30px var(--f-jp); }
+.oc-card { display: grid; grid-template-columns: 84px 1fr; gap: 12px; align-items: center; padding: 12px; border-radius: 12px; background: #1E1846; border: 2px solid #D4FF3A; }
+.oc-card img { width: 84px; height: 84px; object-fit: contain; border-radius: 10px; background: #0E0B22; }
+.oc-card b { display: block; font: 400 22px var(--f-jp); } .oc-card small { display: block; font: 700 13px var(--f-mono); color: #FFC93D; margin-top: 4px; } .oc-card span { display: block; font: 700 12px var(--f-body); color: var(--mute); margin-top: 2px; }
+.oc-card .go { grid-column: 1 / -1; font-size: 20px; }
+.oc-card.none { grid-template-columns: 1fr; border-color: var(--ink-3); text-align: center; color: var(--mute); font: 700 15px var(--f-body); }
+.oc-or { text-align: center; font: 700 12px var(--f-mono); color: var(--mute); }
+.oc-code { display: grid; gap: 6px; } .oc-code label { font: 400 15px var(--f-jp); } .oc-code textarea { width: 100%; box-sizing: border-box; font: 700 13px/1.4 var(--f-mono); padding: 10px; border-radius: 6px; border: 2px solid var(--ink-3); background: var(--bone); color: var(--ink); resize: none; word-break: break-all; }
+.oc-msg { margin: 0; min-height: 1em; font: 700 12px var(--f-body); color: #FF8A3D; } .oc-back { font-size: 15px !important; }
+.oc-warn { margin: 0; font: 700 14px/1.6 var(--f-body); color: var(--bone); }
+@media (max-width: 640px) { .op-cont { left: 16px; right: 16px; width: auto; top: auto; bottom: 16px; transform: none; max-height: calc(100% - 90px); overflow: auto; } }
+.opening:has(.op-cont:not([hidden])) .op-main { opacity: 0; pointer-events: none; }
+.tm-save { position: absolute; inset: auto 16px 40% 16px; display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: center; padding: 14px; border-radius: 14px; background: #0E0B22; border: 2px solid #D4FF3A; opacity: 0; transform: translateY(50%) scale(.7); transition: opacity .35s, transform .35s; z-index: 4; }
+.tm-save .tms-g { width: 54px; height: 54px; border-radius: 12px; border: 2px solid #fff; display: grid; place-items: center; color: #fff; } .tm-save .tms-g svg { width: 30px; height: 30px; }
+.tm-save .tms-c small { display: block; font: 700 10px var(--f-mono); color: #D4FF3A; letter-spacing: .14em; } .tm-save .tms-c b { font: 700 14px var(--f-mono); color: var(--bone); word-break: break-all; }
+.tut[data-s="5"] .tm-save { opacity: 1; transform: translateY(50%) scale(1); }
+.tut[data-s="5"] .tm > :not(.tm-save) { opacity: .15 !important; }
+.op-cont-btn { display: grid !important; justify-items: center; gap: 2px; } .op-cont-btn small { display: block; font: 700 9px var(--f-mono); letter-spacing: .16em; opacity: .7; }
 </style>
 
 <div id="app">
@@ -1420,7 +1441,20 @@ body:has(#tut:not([hidden])) .console, body:has(#tut:not([hidden])) .cmd { displ
           <h1 class="op-title" id="opTitle" aria-label="Rhyme Monsters"><span class="w1">RHYME</span><span class="w2">MONSTERS</span></h1>
           <div class="op-jp2">ライム・モンスターズ</div>
           
-          <div class="op-acts"><button class="op-start" id="opStart"><b>▶ ENDLESS</b><small>ENDLESS CHALLENGE</small></button><button class="op-hub" id="opHub"><b>楽屋へ</b></button></div>
+          <div class="op-acts"><button class="op-start" id="opStart"><b>▶ はじめから</b><small>NEW GAME</small></button><button class="op-hub op-cont-btn" id="opHub"><b>続きから</b><small>CONTINUE</small></button></div>
+        </div>
+        <div class="op-cont" id="opCont" hidden>
+          <h2>続きから</h2>
+          <div class="oc-card" id="ocSaved"></div>
+          <div class="oc-or">または</div>
+          <div class="oc-code"><label for="ocCode">セーブコードを入力</label><textarea id="ocCode" rows="3" placeholder="RM1- からはじまるコード"></textarea><p class="oc-msg" id="ocMsg"></p><button class="go sub" id="ocLoad">コードで再開</button></div>
+          <button class="go sub oc-back" id="ocBack">← もどる</button>
+        </div>
+        <div class="op-cont" id="opReset" hidden>
+          <h2>はじめから？</h2>
+          <p class="oc-warn">このブラウザに保存されているデータ（相棒・コイン・記録）は消えて、最初からになります。続けたいときは先に ⚙設定 → セーブコード を控えてください。</p>
+          <button class="go" id="orYes">はじめから遊ぶ</button>
+          <button class="go sub oc-back" id="orNo">← もどる</button>
         </div>
         <div class="op-name" id="opName" hidden>
           <h2 id="opNameH">MCネームを<br>きめろ</h2>
@@ -1539,7 +1573,7 @@ body:has(#tut:not([hidden])) .console, body:has(#tut:not([hidden])) .cmd { displ
             <div class="tm-you"><u>YOU</u><p>おれの いっきょく <span class="tm-slot"><span id="tutAns"></span><span class="sv"><i>o</i><i>n</i><i>o</i></span></span></p></div>
             <div class="tm-in"><span class="tm-box" id="tutType"></span><span class="tm-fumu">ふむ！</span></div>
             <div class="tm-pop">うまっ！<small>+320</small></div>
-            <div class="tm-rank"><i>F</i><i>E</i><i>D</i><i>C</i><i>B</i><i class="a">A</i><i>S</i><i>SS</i></div>
+            <div class="tm-save"><div class="tms-g"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M4.2 6.5l2.2 1.6M17.6 15.9l2.2 1.6M4.2 17.5l2.2-1.6M17.6 8.1l2.2-1.6"/></svg></div><div class="tms-c"><small>SAVE CODE</small><b>RM1-TU87TsQwEL3Lq6…</b></div></div><div class="tm-rank"><i>F</i><i>E</i><i>D</i><i>C</i><i>B</i><i class="a">A</i><i>S</i><i>SS</i></div>
           </div>
           <div class="tut-cap"><b id="tutH"></b><small id="tutS"></small></div>
         </div>

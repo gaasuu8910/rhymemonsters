@@ -13,10 +13,16 @@ function opSetup() {
   opFrame();
   LINEUP.forEach(([id, x, z, ry]) => { const r = buildMonster(BY[id]); r.root.position.set(x, 0, z); r.root.rotation.y = ry; r.baseRY = ry; r.base = new THREE.Vector3(x, 0, z); r.ph = Math.random() * 6; scene.add(r.root); OP.rigs.push(r); });
   if (SAVE) { $('nameLabel').textContent = 'MC NAME — このままでいい？'; $('nameIn').value = G.name; $('go').textContent = 'つづきから ▶'; $('opNameH').innerHTML = `おかえり、<br>${petName()}`; }
-  $('opStart').addEventListener('click', e => { e.stopPropagation(); quickEndless(); });
-  $('opHub').addEventListener('click', e => { e.stopPropagation(); opGo(); });
-  ['click'].forEach(k => $('startModal').addEventListener(k, e => { if (!e.target.closest('.op-name') && !e.target.closest('.op-acts')) quickEndless(); }));
-  document.addEventListener('keydown', e => { if (OP.phase === 'idle' && e.target.tagName !== 'INPUT') { e.preventDefault(); quickEndless(); } });
+  // はじめから: rules first, then straight into the battle. A saved game asks before it is wiped.
+  $('opStart').addEventListener('click', e => { e.stopPropagation(); if (SAVE) { $('opReset').hidden = false; SFX.ui && SFX.ui(); return; } opNewGame(); });
+  $('orNo').addEventListener('click', e => { e.stopPropagation(); $('opReset').hidden = true; });
+  $('orYes').addEventListener('click', e => { e.stopPropagation(); try { localStorage.removeItem('intama4.save'); localStorage.removeItem('intama4.found'); sessionStorage.setItem('rm_boot', 'new'); } catch (err) {} location.reload(); });
+  // 続きから: the save in this browser, or a save code
+  $('opHub').addEventListener('click', e => { e.stopPropagation(); opShowCont(); });
+  $('ocBack').addEventListener('click', e => { e.stopPropagation(); $('opCont').hidden = true; });
+  $('ocLoad').addEventListener('click', async e => { e.stopPropagation(); try { const o = await readSaveCode($('ocCode').value); store.set('intama4.save', o.s); store.set('intama4.found', o.f || [100]); $('ocMsg').textContent = '読み込みました…'; try { sessionStorage.setItem('rm_boot', 'cont'); } catch (err) {} setTimeout(() => location.reload(), 400); } catch (err) { $('ocMsg').textContent = 'コードが正しくありません。コピーしたコードをそのまま貼りつけてください。'; } });
+  { let boot = ''; try { boot = sessionStorage.getItem('rm_boot') || ''; sessionStorage.removeItem('rm_boot'); } catch (err) {}
+    if (boot === 'new') setTimeout(() => opNewGame(), 400); if (boot === 'cont') setTimeout(() => opShowCont(), 400); }
 }
 // frame the hero: right of the title on wide screens, above it on phones
 function opFrame(snap = true) { const wide = camera.aspect > 1.1, named = $('startModal').classList.contains('named'); Cam.tTgt.set(wide ? (named ? 1.6 : -2.1) : 0, wide ? 1.3 : .35, 0); Cam.tDist = wide ? 10.5 : 13; Cam.tEl = .12; Cam.tAz = 0; Cam.auto = 0; if (snap) Cam.snap = true; Cam.lastUser = 1e9; }
@@ -93,3 +99,15 @@ function opLoop(dt) {
     if (r.crack) r.crack.emissiveIntensity = (OP.phase === 'idle' ? .4 + Math.sin(OP.t * 3) * .3 : 1.6) * (1 + skyU.uKick.value);
   });
 }
+
+function opNewGame() { if (OP.phase !== 'idle') return; G.state = 'tut'; showTut(() => { G.state = 'idle'; PRG.tutDone = true; quickEndless(); }); }
+function opShowCont() {
+  const el = $('ocSaved');
+  if (SAVE && SAVE.runs) { let th = ''; try { th = makeThumbs(168, .35, [G.sp.id])[G.sp.id] || ''; } catch (e) {}
+    el.className = 'oc-card'; el.innerHTML = `<img src="${th}" alt=""><div><b>${petName().replace(/[<>&]/g, '')}</b><small>◎ ${(PRG.coins || 0).toLocaleString()}</small><span>${G.sp.name} ・ BEST ${(PRG.endBest || 0).toLocaleString()}</span></div><button class="go" id="ocGo">このデータで続ける ▶</button>`;
+    $('ocGo').addEventListener('click', e => { e.stopPropagation(); opEnterHub(); }); }
+  else { el.className = 'oc-card none'; el.textContent = 'このブラウザにデータがありません'; }
+  $('ocMsg').textContent = ''; $('opCont').hidden = false;
+}
+// straight to the dressing room (楽屋), no battle on the way in
+function opEnterHub() { if (OP.phase !== 'idle') return; OP.phase = 'drop'; $('opCont').hidden = true; try { audioInit(); } catch (e) {} closeOpening(); G.started = true; G.state = 'idle'; if (!PRG.onbDone) PRG.onbDone = true; setTimeout(() => { try { save(); updateHud(); startDance(); react('boing'); SFX.milestone(); bubble(`おかえり！ ${petName()}だよ`, petName(), true); G.chatT = 3.5; } catch (e) { console.error(e); } }, 600); }

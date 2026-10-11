@@ -430,6 +430,7 @@ const TUT = [
   { h: '打ちこんで<em>ふむ！</em>', s: '速いほど高得点', hl: ['.tm-in'] },
   { h: 'ミスで<em>♥−1</em>', s: '当てるほど BPM UP ↑', hl: ['.tm-hud'] },
   { h: '<em>RANK A</em> でクリア！', s: '', hl: [] },
+  { h: '<em>セーブコード</em>を残そう', s: 'Safariは7日間でデータが消えることがあります。⚙設定 → セーブコードを保存し、次回プレイの際に入力してください', hl: [] },
 ];
 const TS = { i: 0, done: null, timers: [] };
 function tutClear() { TS.timers.forEach(clearTimeout); TS.timers = []; }
