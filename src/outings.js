@@ -160,6 +160,10 @@ $('outLesson').addEventListener('click', () => { $('outModal').hidden = true; op
    服屋 STREET THREADS
    ========================================================= */
 const GAME_URL = 'https://rhymemonsters.rhymemonsters.workers.dev/';
+// 公開告知ポストのURL（例: https://x.com/アカウント/status/123…）を入れると、みんなの投稿がそのポストの引用になる
+const QUOTE_URL = '';
+// straight to X: the post composer with the text (+ the launch post as a quote when set)
+function postToX(text) { const a = document.createElement('a'); a.href = 'https://x.com/intent/tweet?text=' + encodeURIComponent(text) + (QUOTE_URL ? '&url=' + encodeURIComponent(QUOTE_URL) : ''); a.target = '_blank'; a.rel = 'noopener'; document.body.appendChild(a); a.click(); a.remove(); }
 // the best rhyme you landed this battle / run, for share cards and posts
 function bestLine() { const b = G.best; if (!b) return null; return { w: b.w, a: b.a, lab: (SLAM[b.g] || ['', ''])[0] }; }
 const SH = { tab: 'head', sel: null, prev: null };
@@ -370,22 +374,20 @@ function photoCapture() {
   if (PH.pr) { try { renderer.setPixelRatio(PH.pr); if (composer && composer.setPixelRatio) composer.setPixelRatio(PH.pr); resize(); } catch (e) {} PH.pr = 0; }
   out.toBlob(b => { PH.blob = b; PH.url && URL.revokeObjectURL(PH.url); PH.url = URL.createObjectURL(b); $('prImg').src = PH.url; $('prBack').textContent = '撮りなおす'; $('photoResult').querySelector('.eyebrow').textContent = '宣材写真'; $('photoResult').hidden = false; }, 'image/png');
 }
-let downloadsNS = null; try { window.claude && window.claude.use && window.claude.use('downloads').then(d => { downloadsNS = d; $('prSave').hidden = !d; }).catch(() => {}); } catch (e) {}
+let downloadsNS = null; try { window.claude && window.claude.use && window.claude.use('downloads').then(d => { downloadsNS = d; }).catch(() => {}); } catch (e) {}
+$('prSave').hidden = false;
 $('prSave').addEventListener('click', async () => {
-  if (!downloadsNS || !PH.blob) return;
-  try { await downloadsNS.save({ filename: `rhyme-monsters-${G.sp.name}.png`, data: PH.blob }); $('prNote').textContent = 'SAVED ✓'; }
-  catch (e) { $('prNote').textContent = ''; }
+  if (!PH.blob) return; const name = `rhyme-monsters-${G.sp.name}.png`;
+  if (downloadsNS) { try { await downloadsNS.save({ filename: name, data: PH.blob }); $('prNote').textContent = 'SAVED ✓'; } catch (e) { $('prNote').textContent = ''; } return; }
+  let f = null; try { f = new File([PH.blob], name, { type: 'image/png' }); } catch (e) {}
+  if (f && navigator.canShare && navigator.share) { let ok = false; try { ok = navigator.canShare({ files: [f] }); } catch (e) {} if (ok) { navigator.share({ files: [f] }).catch(() => {}); return; } }
+  const a = document.createElement('a'); a.href = PH.url; a.download = name; document.body.appendChild(a); a.click(); a.remove(); $('prNote').textContent = 'SAVED ✓';
 });
 $('prX').addEventListener('click', () => {
   const line = (PUNCH[G.sp.id] || PUNCH[0])[PH.punch];
   let text = PH.text || `「${line}」\n${petName()}（${G.sp.name}）が${MODE().cup}の${ROUND[RND()]}に参戦中🎤\n#ライムモンスターズ`;
   { const BL = PH.text ? bestLine() : null; text = text + (BL ? `\n今日のベスト韻「${BL.w}」→「${BL.a}」${BL.lab}` : '') + `\nあなたは何点？ ▶ ${GAME_URL}`; }
-  const intent = () => { const a = document.createElement('a'); a.href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(text); a.target = '_blank'; a.rel = 'noopener'; document.body.appendChild(a); a.click(); a.remove(); };
-  // with the share sheet the image rides along with the post; X's web link alone can only carry text
-  let f = null; try { f = PH.blob && new File([PH.blob], 'rhyme-monsters.png', { type: 'image/png' }); } catch (e) {}
-  if (f && navigator.canShare && navigator.share) { let ok = false; try { ok = navigator.canShare({ files: [f], text }); } catch (e) {}
-    if (ok) { navigator.share({ files: [f], text }).catch(e => { if (e && e.name !== 'AbortError') { intent(); $('prNote').textContent = '画像は保存して添付してね'; } }); return; } }
-  intent(); $('prNote').textContent = '画像は保存して添付してね';
+  postToX(text); $('prNote').textContent = '画像は「画像を保存」から添付してね';
 });
 $('prBack').addEventListener('click', () => { $('photoResult').hidden = true; if (PH.from === 'over') { PH.from = null; $('overModal').hidden = false; } });
 

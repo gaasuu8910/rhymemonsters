@@ -1041,7 +1041,7 @@ $('tabTree').addEventListener('click', () => { $('settings').hidden = true; });
 $('treeBack') && $('treeBack').addEventListener('click', () => showTab(false));
 $('again').addEventListener('click', () => { $('overModal').hidden = true; startBattle(G.endless); });
 $('endBtn').addEventListener('click', () => { if (G.state === 'idle') startBattle(true); });
-$('ovShare').addEventListener('click', () => { if (G.dailyDone) { const text = dailyText(); if (navigator.share) { navigator.share({ text }).catch(() => {}); return; } const l = document.createElement('a'); l.href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(text); l.target = '_blank'; l.rel = 'noopener'; document.body.appendChild(l); l.click(); l.remove(); return; } $('overModal').hidden = true; PH.from = 'over'; shareCard(G.endless ? { kind: 'endless' } : { kind: 'battle' }); });
+$('ovShare').addEventListener('click', () => { if (G.dailyDone) { postToX(dailyText()); return; } $('overModal').hidden = true; PH.from = 'over'; shareCard(G.endless ? { kind: 'endless' } : { kind: 'battle' }); });
 $('clShare').addEventListener('click', () => shareCard({ kind: 'champ', mode: showClear.pc ? showClear.pc.mode : G.mode }));
 $('toHub').addEventListener('click', toHub);
 $('ovMsg').addEventListener('click', e => { const c = e.target.closest('[data-act]'); if (!c || c.disabled) return; const a = c.dataset.act, M = $('overModal'); SFX.ui();
