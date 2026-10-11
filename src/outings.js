@@ -169,7 +169,7 @@ function openShop() {
 }
 function closeShop() { WEAR_PREVIEW = null; G.pose = null; setMonster(G.sp, false); $('shop').hidden = true; leaveOuting(); startDance(true); if (SH.ret === 'lobby') { SH.ret = null; showBracket('lobby'); } }
 // five stat bars; with a preview, the change shows as a green/red segment
-const STAT_INFO = { a: '正解1回のスコアが増える（100で1.5倍）', d: '連続正解でガード🛡がたまり、次のミスを1回防ぐ（10で8連続ごと → 100で3連続ごと）。50以上なら最初からガード1つ', h: 'ライフが増える（40で4つ、80で5つ）', k: 'エンドレスのテンポの上がり方がゆるやかになる（50で約3割、100で約7割ゆるやか）', c: 'コンボがつながるほど伸びるスコア倍率が上がる' };
+const STAT_INFO = { a: '正解1回のスコアが増える（100で1.5倍）', d: '連続正解でガード🛡がたまり、次のミスを1回防ぐ（10で8連続ごと → 100で3連続ごと）。50以上なら最初からガード1つ', h: 'ライフが増える（40で4つ、80で5つ）', k: 'テンポの上がり方がゆるやかになる（50で2割、100で4割ゆるやか）', c: 'コンボがつながるほど伸びるスコア倍率が上がる' };
 function statBars(el, now, next, info) {
   el.innerHTML = STAT_KEYS.map(([k, ja, en]) => { const a = now.tot[k], b = next ? next.tot[k] : a, base = now.base[k], d = b - a;
     return `<div class="sb"><span class="sl"><b>${ja}</b><i>${en}</i></span><span class="sbar"><i class="bs" style="width:${base}%"></i><i class="bg" style="left:${base}%;width:${Math.max(0, Math.min(a, b) - base)}%"></i>${d > 0 ? `<i class="up" style="left:${a}%;width:${d}%"></i>` : d < 0 ? `<i class="dn" style="left:${b}%;width:${-d}%"></i>` : ''}</span><em>${b}${d ? `<small class="${d > 0 ? 'p' : 'm'}">${d > 0 ? '+' : ''}${d}</small>` : ''}</em>${info ? `<p class="si">${STAT_INFO[k]}</p>` : ''}</div>`; }).join('');

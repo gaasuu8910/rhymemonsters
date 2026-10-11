@@ -6175,7 +6175,7 @@ const EVO_BPM = [120, 132, 144, 156], STAGE_MULT = [1, 1.3, 1.7, 2.2];
 // once the beat passes MAX_ZONE_BPM the short words are gone for good
 // every 2 rhymes one step; the beat dwells around 150 where the game is at its best, then climbs to the top zone
 const STEP_HITS = 2, MAX_ZONE_BPM = 180, BPM_STEPS = [120, 120, 135, 135, 150, 150, 150, 150, 165, 165, 180];
-function stair(h) { const s = Math.floor((h || 0) / STEP_HITS), base = s < BPM_STEPS.length ? BPM_STEPS[s] : 180 + 5 * (s - BPM_STEPS.length + 1), bpm = Math.min(ENDLESS_MAX, base + (startBpm() - ENDLESS_BPM)), max = bpm >= MAX_ZONE_BPM; return { s, bpm, max, len: max ? ENDLESS_LEN.length - 1 : Math.min(ENDLESS_LEN.length - 2, s) }; }
+function stair(h) { const s = Math.floor((h || 0) / STEP_HITS), base = s < BPM_STEPS.length ? BPM_STEPS[s] : 180 + 5 * (s - BPM_STEPS.length + 1), flow = 1 - Math.min(100, (typeof ST === 'function' ? ST().k : 0) || 0) / 250, bpm = Math.min(ENDLESS_MAX, Math.round(startBpm() + (base - ENDLESS_BPM) * flow)), max = base >= MAX_ZONE_BPM; /* 滑舌 (FLOW) softens each tempo step */ return { s, bpm, max, len: max ? ENDLESS_LEN.length - 1 : Math.min(ENDLESS_LEN.length - 2, s) }; }
 const stageIx = () => G.daily ? 0 : Math.max(0, Math.min(3, (G.sp && G.sp.stage) || 0)), startBpm = () => EVO_BPM[stageIx()], stageMult = () => STAGE_MULT[stageIx()];
 function guardFx() { try { ring('#56D9F5', { big: 8 }); ring('#FFFFFF', { y: .6, big: 6 }); flash(.5, .5); SFX.gong(); FX.glint.emit({ x: 0, y: 1.4 * rigScale, z: 0, n: 120, color: ['#56D9F5', '#FFFFFF'], speed: [3, 7], size: [.3, .7] }); document.body.classList.add('guardhit'); setTimeout(() => document.body.classList.remove('guardhit'), 900); } catch (e) {} }
 const guardEvery = d => Math.max(3, 9 - Math.round(d / 15)); // consecutive hits that charge one guard
@@ -6773,7 +6773,7 @@ function openShop() {
 }
 function closeShop() { WEAR_PREVIEW = null; G.pose = null; setMonster(G.sp, false); $('shop').hidden = true; leaveOuting(); startDance(true); if (SH.ret === 'lobby') { SH.ret = null; showBracket('lobby'); } }
 // five stat bars; with a preview, the change shows as a green/red segment
-const STAT_INFO = { a: '正解1回のスコアが増える（100で1.5倍）', d: '連続正解でガード🛡がたまり、次のミスを1回防ぐ（10で8連続ごと → 100で3連続ごと）。50以上なら最初からガード1つ', h: 'ライフが増える（40で4つ、80で5つ）', k: 'エンドレスのテンポの上がり方がゆるやかになる（50で約3割、100で約7割ゆるやか）', c: 'コンボがつながるほど伸びるスコア倍率が上がる' };
+const STAT_INFO = { a: '正解1回のスコアが増える（100で1.5倍）', d: '連続正解でガード🛡がたまり、次のミスを1回防ぐ（10で8連続ごと → 100で3連続ごと）。50以上なら最初からガード1つ', h: 'ライフが増える（40で4つ、80で5つ）', k: 'テンポの上がり方がゆるやかになる（50で2割、100で4割ゆるやか）', c: 'コンボがつながるほど伸びるスコア倍率が上がる' };
 function statBars(el, now, next, info) {
   el.innerHTML = STAT_KEYS.map(([k, ja, en]) => { const a = now.tot[k], b = next ? next.tot[k] : a, base = now.base[k], d = b - a;
     return `<div class="sb"><span class="sl"><b>${ja}</b><i>${en}</i></span><span class="sbar"><i class="bs" style="width:${base}%"></i><i class="bg" style="left:${base}%;width:${Math.max(0, Math.min(a, b) - base)}%"></i>${d > 0 ? `<i class="up" style="left:${a}%;width:${d}%"></i>` : d < 0 ? `<i class="dn" style="left:${b}%;width:${-d}%"></i>` : ''}</span><em>${b}${d ? `<small class="${d > 0 ? 'p' : 'm'}">${d > 0 ? '+' : ''}${d}</small>` : ''}</em>${info ? `<p class="si">${STAT_INFO[k]}</p>` : ''}</div>`; }).join('');
