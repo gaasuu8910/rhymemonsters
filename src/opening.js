@@ -100,7 +100,11 @@ function opLoop(dt) {
   });
 }
 
-function opNewGame() { if (OP.phase !== 'idle') return; G.state = 'tut'; showTut(() => { G.state = 'idle'; PRG.tutDone = true; quickEndless(); }); }
+function opNewGame() { if (OP.phase !== 'idle') return; G.state = 'tut'; showTut(() => { curtain(() => document.body.classList.contains('battle')); G.state = 'idle'; PRG.tutDone = true; quickEndless(); }); }
+// full-screen cover for a screen change: up at once, lifts when ready() is true (or after 4s)
+function curtain(ready) { let c = $('curtain'); if (!c) { c = document.createElement('div'); c.id = 'curtain'; c.innerHTML = `<img src="${typeof EMBLEM_URI !== 'undefined' ? EMBLEM_URI : ''}" alt="">`; document.body.appendChild(c); }
+  c.classList.remove('off'); c.hidden = false; const t0 = performance.now();
+  const iv = setInterval(() => { if ((ready && ready()) || performance.now() - t0 > 4000) { clearInterval(iv); setTimeout(() => { c.classList.add('off'); setTimeout(() => { c.hidden = true; }, 320); }, 150); } }, 40); }
 function opShowCont() {
   const el = $('ocSaved');
   if (SAVE && SAVE.runs) { let th = ''; try { th = makeThumbs(168, .35, [G.sp.id])[G.sp.id] || ''; } catch (e) {}

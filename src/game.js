@@ -1050,7 +1050,7 @@ $('ovMsg').addEventListener('click', e => { const c = e.target.closest('[data-ac
   if (a === 'again') return $('again').click();
   if (a === 'power') { const s = M.querySelector('.pwsub'); s.hidden = !s.hidden; return; }
   if (a === 'hub') return $('toHub').click();
-  if (a === 'evo' || a === 'shop') { if (G.pendingEnd) return $('toHub').click(); toHub(); setTimeout(() => { a === 'evo' ? openEvo() : openShop(); }, 400); } });
+  if (a === 'evo' || a === 'shop') { if (G.pendingEnd) return $('toHub').click(); toHub(); a === 'evo' ? openEvo() : openShop(); } });
 $('gName').addEventListener('click', () => { if (G.state === 'idle') $('nameBtn').click(); });
 $('nameBtn').addEventListener('click', () => { $('rename').value = cleanMC(G.name); $('nameModal').hidden = false; setTimeout(() => $('rename').focus(), 50); });
 $('renameNo').addEventListener('click', () => { $('nameModal').hidden = true; });

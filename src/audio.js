@@ -13,6 +13,7 @@ function audioInit() {
   if (!Seq.next) Seq.next = AT() + .1; // the beat clock runs even with no audio at all
   if (A.ac) { wakeAudio(); return; }
   try { audioBuild(); } catch (e) { console.warn('audio off', e); A.ac = null; }
+  try { loadCheer(); } catch (e) {}
 }
 function audioBuild() {
   A.ac = new (window.AudioContext || window.webkitAudioContext)();
@@ -270,7 +271,7 @@ const SFX = {
     for (let i = 0; i < Math.min(g, 4); i++) S.bell(t + i * s16 * .5, tones[c0 + i], .1, .45);
     if (g >= 4) S.stab(t, ch.map(n => n + 12), .16); if (g === 5) { S.crash(t, .16); for (let i = 0; i < 6; i++) S.bell(t + s16 * 2 + i * s16 * .25, tones[c0 + 2 + (i % 4)] + 12, .05, .35); } },
   // crowd: a wash of band-passed noise (voices), random whistles, scattered claps — bigger p = bigger cheer
-  crowd(p = 1) { if (!A.ac) return; if (p >= .4) SFX.woo(p); const t = ACT(), d = 1.1 + p * 1.1;
+  crowd(p = 1) { if (!A.ac) return; if (SFX.cheer(Math.min(1, .3 + p * .35))) return; if (p >= .4) SFX.woo(p); const t = ACT(), d = 1.1 + p * 1.1;
     [[650, .9], [1300, 1.2], [2600, 1.6]].forEach(([f, q], i) => { const n = N(t, d + .3), g = G_(); g.gain.setValueAtTime(.0001, t); g.gain.linearRampToValueAtTime(.16 * p * (i === 1 ? 1.2 : .8), t + .14 + i * .03); g.gain.exponentialRampToValueAtTime(.0001, t + d); const bp = F('bandpass', f, q); bp.frequency.linearRampToValueAtTime(f * 1.25, t + .25); bp.frequency.linearRampToValueAtTime(f, t + d); chain(n, bp, g, A.sfx); });
     for (let i = 0; i < Math.round(3 + p * 5); i++) { const t0 = t + Math.random() * .6, f = 1700 + Math.random() * 1100, o = O('sine', f, t0, .5), g = G_(); o.frequency.linearRampToValueAtTime(f * 1.35, t0 + .18); o.frequency.exponentialRampToValueAtTime(f * .8, t0 + .45); env(g, t0, .03, .03 * p, .4); chain(o, g, A.sfx); }
     for (let i = 0; i < Math.round(18 * p); i++) { const t0 = t + .05 + Math.random() * d * .8, n = N(t0, .03), g = G_(); env(g, t0, .001, .07 * p * Math.random(), .03); chain(n, F('bandpass', 1500 + Math.random() * 900, 1.5), g, A.sfx); } },
@@ -294,5 +295,19 @@ const SFX = {
   milestone() { if (!A.ac) return; const t = ACT(); [0, 4, 7, 12, 16, 19, 24].forEach((d, i) => S.bell(t + i * .045, 72 + d, .09, .5)); S.crash(t, .12); },
   scratch() { if (!A.ac) return; const t = ACT(), n = N(t, .5), f = F('bandpass', 600, 4), g = G_(); f.frequency.setValueAtTime(400, t); f.frequency.exponentialRampToValueAtTime(3500, t + .12); f.frequency.exponentialRampToValueAtTime(300, t + .3); f.frequency.exponentialRampToValueAtTime(2500, t + .42); env(g, t, .01, .35, .45); chain(n, f, g, A.sfx); },
   hit(q) { if (!A.ac) return; const t = ACT(); S.pluck(t, [0, 72, 76, 79, 84][q] || 72, .14, .12); if (q >= 3) S.hat(t, .18, true); },
-  ui() { if (!A.ac) return; const t = ACT(), o = O('sine', 660, t, .08), g = G_(); o.frequency.exponentialRampToValueAtTime(990, t + .05); env(g, t, .002, .1, .07); chain(o, g, A.sfx); },
+  ui() { if (!A.ac) return; const t = ACT(), o = O('sine', 660, t, .08), g = G_(); o.frequency.exponentialRampToValueAtTime(990, t + .05); env(g, t, .002, .12, .07); chain(o, g, A.sfx);
+    const n = N(t, .02), ng = G_(); env(ng, t, .001, .05, .015); chain(n, F('bandpass', 4200, 2), ng, A.sfx); },
+  // the recorded cheer (歓声): v 0..1, 神韻 = 1 (max). A new cheer fades the previous one so quick hits don't pile up
+  cheer(v = 1) { if (!A.ac || v <= 0) return false; loadCheer(); if (!CHEER.buf) return false; const t = ACT();
+    if (CHEER.last) { try { const g0 = CHEER.last.g.gain; g0.cancelScheduledValues(t); g0.setValueAtTime(g0.value, t); g0.linearRampToValueAtTime(.0001, t + .35); CHEER.last.s.stop(t + .4); } catch (e) {} }
+    const s = A.ac.createBufferSource(), g = G_(); s.buffer = CHEER.buf; s.playbackRate.value = .97 + Math.random() * .06; g.gain.setValueAtTime(1.15 * Math.pow(v, 1.2), t);
+    s.connect(g); g.connect(A.sfx); s.start(t); CHEER.last = { s, g }; s.onended = () => { if (CHEER.last && CHEER.last.s === s) CHEER.last = null; }; return true; },
 };
+const CHEER = { buf: null, loading: false, last: null };
+const CHEER_VOL = [0, .14, .25, .45, .7, 1];   // ミス / ちょっと / おしい / ナイス / うまっ / 神韻(max)
+function loadCheer() { if (CHEER.buf || CHEER.loading || !A.ac || typeof CHEER_URI === 'undefined') return; CHEER.loading = true;
+  fetch(CHEER_URI).then(r => r.arrayBuffer()).then(ab => new Promise((ok, ng) => A.ac.decodeAudioData(ab, ok, ng))).then(b => { CHEER.buf = b; }).catch(e => { CHEER.loading = false; console.warn('cheer', e); }); }
+// every sound stamps the time, so a button whose own handler stayed silent still gets the ui click
+let SFX_LAST = 0; Object.keys(SFX).forEach(k => { const f = SFX[k]; SFX[k] = function (...a) { SFX_LAST = performance.now(); return f.apply(this, a); }; });
+document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('button, [data-act], [data-t], [data-v], [role="button"], summary, label.sw, .evk, .ms-chip'); if (!b || b.disabled) return;
+  const t0 = performance.now(); setTimeout(() => { if (SFX_LAST < t0) try { audioInit(); SFX.ui(); } catch (err) {} }, 0); }, true);

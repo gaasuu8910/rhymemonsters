@@ -6,7 +6,7 @@ code = '\n'.join([r('head.js'), r('data.js'), r('quiz.js'), r('diss.js'), r('fit
 import base64
 b64 = lambda s: base64.b64encode(s if isinstance(s, bytes) else s.encode()).decode()
 EMB = r('emblem.svg'); FAV = r('favicon.svg')
-code = f"const EMBLEM_URI = 'data:image/svg+xml;base64,{b64(EMB)}';\n" + code
+code = f"const CHEER_URI = 'data:audio/mpeg;base64,{b64(open('cheer.mp3', 'rb').read())}';\n" + f"const EMBLEM_URI = 'data:image/svg+xml;base64,{b64(EMB)}';\n" + code
 html = r('shell.html').replace('/*__CODE__*/', code).replace('<!--EMBLEM-->', EMB.replace('xmlns="http://www.w3.org/2000/svg" ', 'aria-hidden="true" ', 1))
 html = html.replace('__FAVICON__', 'data:image/svg+xml;base64,' + b64(FAV)).replace('__APPLEICON__', 'data:image/png;base64,' + b64(open('apple-touch-icon.png', 'rb').read()))
-open('../index.html', 'w').write(html)
+open('../intama.html', 'w').write(html)

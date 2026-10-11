@@ -203,7 +203,7 @@ function reveal() {
     if (G.endless) { if (spd >= 1.3) mission('speed5', 1); mission('combo10', 0, G.combo + 1); mission('hits15', 0, (G.hits || 0)); mission('bpm150', 0, Math.round(Seq.bpm)); }
     G.origRun = orig ? (G.origRun || 0) + 1 : 0;
     if (G.endless && !G.guards && ++G.guardC >= G.guardN) { G.guards = 1; G.guardC = 0; setTimeout(() => banner('<b>🛡 GUARD READY</b>', 1200), 900); }
-    if (g >= 3) { SFX.crowd(g === 5 ? 1.5 : g === 4 ? 1 : .45); crowdPop(g); }
+    if (!SFX.cheer(CHEER_VOL[Math.min(5, g)]) && g >= 3) SFX.crowd(g === 5 ? 1.5 : g === 4 ? 1 : .45); if (g >= 3) crowdPop(g);
     oppReact('hurt');
     const S = ST(), armed = G.skillArmed; G.skillArmed = false;
     if (G.endless) { const mult = stageMult() * (1 + S.a / 200) * (armed ? 2 : 1) * (orig ? 1.5 * (1 + Math.min(4, Math.max(0, (G.origRun || 0) - 1)) * .15) : 1) * spd, ep = Math.round(g * g * 10 * mult * (1 + Math.min(G.combo, 30) * (.08 + S.c / 1000))); G.endScore = (G.endScore || 0) + ep; $('endScore').textContent = G.endScore.toLocaleString(); tapPop(innerWidth / 2, innerHeight * .4, `+${ep}`, 34, '#D4FF3A'); }

@@ -14,4 +14,4 @@ updateHud();
 new ResizeObserver(resize).observe(stageEl); resize();
 opSetup();
 requestAnimationFrame(loop);
-window.__game = { FITS, LEXR, playEnding, endlessOver, renderTree, makeThumbs, AIQ, QBY, pickWord, branchTarget, secretCount, PRG, MODES, OPP, OPPN, loadMode, showModeSelect, showClear, showVS, REEL, STAGEBG, ST, statsOf, BEAT, beatTap, beatGrid, LS, PH, save, lnDown, lnUp, showBracket, verdict, TRACKS, SP_TRACK, G, V, BY, SP, setMonster: (s, p) => { setMonster(s, p); camDefaults(); camReset(); }, judge, Seq, startBattle, reveal, evolve, showTab, tapMonster, startDance, A, get foods() { return foods; } };
+window.__game = { SFX, CHEER, FITS, LEXR, playEnding, endlessOver, renderTree, makeThumbs, AIQ, QBY, pickWord, branchTarget, secretCount, PRG, MODES, OPP, OPPN, loadMode, showModeSelect, showClear, showVS, REEL, STAGEBG, ST, statsOf, BEAT, beatTap, beatGrid, LS, PH, save, lnDown, lnUp, showBracket, verdict, TRACKS, SP_TRACK, G, V, BY, SP, setMonster: (s, p) => { setMonster(s, p); camDefaults(); camReset(); }, judge, Seq, startBattle, reveal, evolve, showTab, tapMonster, startDance, A, get foods() { return foods; } };

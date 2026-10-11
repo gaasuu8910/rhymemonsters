@@ -1316,6 +1316,10 @@ body:has(#tut:not([hidden])) .console, body:has(#tut:not([hidden])) .cmd { displ
 .tut[data-s="5"] .tm-save { opacity: 1; transform: translateY(50%) scale(1); }
 .tut[data-s="5"] .tm > :not(.tm-save) { opacity: .15 !important; }
 .op-cont-btn { display: grid !important; justify-items: center; gap: 2px; } .op-cont-btn small { display: block; font: 700 9px var(--f-mono); letter-spacing: .16em; opacity: .7; }
+#curtain{position:fixed;inset:0;z-index:99999;background:#0E0B22;display:grid;place-items:center;transition:opacity .3s ease}
+#curtain img{width:34vmin;max-width:220px;animation:ctpop .5s cubic-bezier(.3,1.6,.5,1) both}
+#curtain.off{opacity:0;pointer-events:none}
+@keyframes ctpop{from{transform:scale(.6) rotate(-12deg);opacity:0}to{transform:none;opacity:1}}
 </style>
 
 <div id="app">
