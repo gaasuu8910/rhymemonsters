@@ -18,6 +18,7 @@ function makeThumbs(px = 192, ry = -.6, ids) {
 // three trees side by side in sections: starter → 2 → 4 → 4 → 4
 function renderTree() {
   if (!thumbs) thumbs = {};
+  ROSTER.forEach(id => { const f = figImg(id); if (f) thumbs[id] = f; });
   const need = ROSTER.filter(id => !thumbs[id]);
   if (need.length && !renderTree.busy) { renderTree.busy = true; const step = () => { const ids = ROSTER.filter(id => !thumbs[id]).slice(0, 3); if (!ids.length || $('treeView').hidden) { renderTree.busy = false; return; } try { Object.assign(thumbs, makeThumbs(160, -.5, ids)); } catch (e) {} ids.forEach(id => document.querySelectorAll(`[data-tid="${id}"]`).forEach(im => im.src = thumbs[id])); setTimeout(step, 30); }; setTimeout(step, 60); }
   const COLW = 190, ROWH = 76, TOP = 30, SEC = 4 * ROWH + 34;

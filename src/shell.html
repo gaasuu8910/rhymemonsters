@@ -1320,6 +1320,7 @@ body:has(#tut:not([hidden])) .console, body:has(#tut:not([hidden])) .cmd { displ
 #curtain img{width:34vmin;max-width:220px;animation:ctpop .5s cubic-bezier(.3,1.6,.5,1) both}
 #curtain.off{opacity:0;pointer-events:none}
 @keyframes ctpop{from{transform:scale(.6) rotate(-12deg);opacity:0}to{transform:none;opacity:1}}
+img[src^="figs/"]{object-fit:contain;background:transparent!important}
 </style>
 
 <div id="app">

@@ -438,7 +438,7 @@ const champ = () => RND() === FINAL && !!PRG.cleared[G.mode];
 const petName = () => 'MC' + (G.name || G.sp.name);
 const cleanMC = v => (v || '').normalize('NFKC').trim().replace(/^MC[\s・.\-_]*/i, '').slice(0, 8);
 const OPPT = {};
-function oppThumb(id) { if (!OPPT[id]) OPPT[id] = new Promise(res => setTimeout(() => { try { res(makeThumbs(160, -.35, [id])[id]); } catch (e) { res(''); } }, 30)); return OPPT[id]; }
+function oppThumb(id) { if (!OPPT[id]) OPPT[id] = new Promise(res => setTimeout(() => { try { res(figThumbs(160, -.35, [id])[id]); } catch (e) { res(''); } }, 30)); return OPPT[id]; }
 const answerEl = $('answer'), sendEl = $('send'), hintEl = $('hint');
 
 function say(text, pitchUp = 0) {
@@ -752,7 +752,7 @@ $('clEgg').addEventListener('click', () => { $('clearModal').hidden = true; show
 $('clHub').addEventListener('click', () => { $('clearModal').hidden = true; });
 /* ---------- tournament bracket: you climb it one evolution at a time ---------- */
 const BKT = {};
-function bkThumbs(ids) { const need = ids.filter(id => !BKT[id]); if (need.length) try { Object.assign(BKT, makeThumbs(120, -.3, need)); } catch (e) {} return BKT; }
+function bkThumbs(ids) { const need = ids.filter(id => !BKT[id]); if (need.length) try { Object.assign(BKT, figThumbs(120, -.3, need)); } catch (e) {} return BKT; }
 // a real 16-MC main draw (after the qualifier): your rivals win their own matches and climb up to meet you
 const FIELD_NAMES = ['MCポテト', 'MCジャム', 'MCミント', 'MCタコス', 'MCモチ', 'MCラテ', 'MCユズ', 'MCノリ', 'MCソラ', 'MCルル', 'MCゴマ', 'MCパイン', 'MCキキ', 'MCドド', 'MCミソ', 'MCバジル', 'MCチャイ', 'MCワサビ'];
 function fieldOf(mode, sec) {
@@ -1072,7 +1072,7 @@ $('nameIn').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.isCom
 /* ---------- ending: a short curtain call when a cup is won for the first time ---------- */
 function playEnding(pc, done) {
   const el = $('ending'), m = MODES[pc.mode], line = []; for (let s = G.sp; s; s = s.parent !== undefined ? BY[s.parent] : null) line.unshift(s);
-  let th = {}; try { th = makeThumbs(220, -.3, line.map(s => s.id)); } catch (e) {}
+  let th = {}; try { th = figThumbs(220, -.3, line.map(s => s.id)); } catch (e) {}
   let big = ''; try { big = makeThumbs(560, .25, [G.sp.id])[G.sp.id]; } catch (e) {}
   const esc3 = x => String(x || '').replace(/[<>&]/g, '');
   el.innerHTML = `<div class="en-spot"></div>
@@ -1095,7 +1095,7 @@ const EVO_COST = [0, 150, 600, 1800]; // EXP
 function evoBuyDone() { G.evoBuy = false; G.state = 'idle'; G.evoPhase = ''; Cam.auto = 0; camReset(); BG.hold = false; save(); updateHud(); startDance(true); updateEvoChip(); }
 function openEvo() {
   const sp = G.sp, kids = sp.kids.map(k => BY[k]); if (!kids.length) return;
-  let th = {}; try { th = makeThumbs(200, -.3, kids.map(k => k.id)); } catch (e) {}
+  let th = {}; try { th = figThumbs(200, -.3, kids.map(k => k.id)); } catch (e) {}
   const cost = EVO_COST[kids[0].stage], can = (PRG.exp || 0) >= cost;
   $('evoList').innerHTML = kids.map(k => { const seen = discovered.has(k.id), b = baseStats(k), cur = baseStats(sp);
     return `<div class="evk"><img src="${th[k.id] || ''}" class="${seen ? '' : 'sil'}" alt=""><b>${seen ? k.name : '？？？'}</b><small>${STAGE_NAME[k.stage]}${TYPE_OF(k) ? ' · ' + TYPE_OF(k) : ''}</small>
