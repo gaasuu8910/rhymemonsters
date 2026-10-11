@@ -514,7 +514,7 @@ function onbEnter(s) {
   if (s === 1) { const kids = G.sp.kids || []; if (!kids.length) return onbEnter(2); const cost = EVO_COST[BY[kids[0]].stage]; if ((PRG.exp || 0) < cost) { const add = cost - (PRG.exp || 0); addExp(add); banner(`<small>はじめてボーナス</small><b>EXP +${add}</b>`, 1800); } updateHud(); coach('#evoBtn', '<b>EXP</b>がたまった！<br>ぼくを<b>進化</b>させて！'); }
   if (s === 2) { const nb = nextBuy(); if (nb && (PRG.coins || 0) < Math.max(100, nb.p)) { const add = Math.max(100, nb.p) - (PRG.coins || 0); addCoins(add, true); banner(`<small>はじめてボーナス</small><b>◎ +${add}</b>`, 1800); } updateHud(); ONB.n0 = PRG.owned.length; ONB.nb = null; coach('#outBtn', '<b>コイン</b>でギアを買うと<br>ステータスが上がるよ！'); }
   if (s === 3) coach('#dailyBtn', '最後に<b>今日の一本</b>！<br>自分の韻を考えてXで発表しよう', { skip: 'あとでやる ▶' });
-  if (s === 4) coach(null, '準備OK！<br>ここからが<b>本編</b>だ！<br><small>RANK A でクリア</small>', { go: 'エンドレスMCバトルへ ▶', skip: '楽屋を見てまわる' });
+  if (s === 4) coach(null, '準備OK！<br>たくさん<b>韻</b>を踏んで<br><b>ハイスコア</b>を目指そう！', { go: '閉じる' });
 }
 function onbTick() {
   const s = ONB.step; if (s < 0) return; if (!$('coach').hidden) coachPlace();
@@ -550,7 +550,7 @@ function onbTick() {
   }
 }
 $('coach').querySelector('.cb-skip').addEventListener('click', () => { if (ONB.step === 3) onbEnter(4); else if (ONB.step === 4) onbEnd(false); else onbEnd(false); });
-$('coach').querySelector('.cb-go').addEventListener('click', () => onbEnd(true));
+$('coach').querySelector('.cb-go').addEventListener('click', () => onbEnd(false));   // the tutorial ends in the 楽屋
 
 $('prOpts').addEventListener('click', e => { const b = e.target.closest('button[data-k]'); if (!b || !PH.lastO) return; PH.opt[b.dataset.k] = +b.dataset.i; SFX.ui(); shareCard(PH.lastO); });
 

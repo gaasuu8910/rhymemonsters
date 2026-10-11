@@ -70,6 +70,5 @@ window.__exportRig = function (id) { const r = (FIG ? _rawBuild : buildMonster)(
   return out; };
 
 // pre-rendered Blender figures (figs/ID.webp) for the showcase screens: 図鑑, evolution choice, ending, rivals
-const FIG_IDS = new Set(typeof FIG_IDS_LIST !== 'undefined' ? FIG_IDS_LIST : []);
-function figImg(id) { return FIG && FIG_IDS.has(+id) ? 'figs/' + id + '.webp' : null; }
+function figImg(id) { return FIG && typeof FIG_DATA !== 'undefined' && FIG_DATA[+id] || null; }   // embedded, so they show anywhere the page runs
 function figThumbs(px, ry, ids) { const out = {}, need = []; ids.forEach(id => { const f = figImg(id); if (f) out[id] = f; else need.push(id); }); if (need.length) Object.assign(out, makeThumbs(px, ry, need)); return out; }
