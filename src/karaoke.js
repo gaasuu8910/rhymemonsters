@@ -127,6 +127,11 @@ function karaHook(step, t) {
 function closeInput(t) {
   if (!V.sent) { answerEl.disabled = sendEl.disabled = true; V.phase = 'locked'; }
 }
+// offline 'meaning' judge: hand-made answers that rhyme AND make sense in the player's line
+const fitOf = w => { const L = FITS[w]; if (!L) return null; if (!L._m) { L._m = new Map(L.map(([a, d]) => [a, d])); L._d = new Map(L.map(([a, d]) => [d, a])); } return L; };
+const fitHas = (w, kana) => { const L = fitOf(w); return !!(L && L._m.has(kana)); };
+// kanji typed without AI: accept it when it is a known display form for this prompt (model answer or a fitting answer)
+function kanaFor(w, raw) { const q = QBY[w]; if (q && raw === q.k) return q.a; const L = fitOf(w); return L && L._d.has(raw) ? L._d.get(raw) : ''; }
 function submitAnswer() {
   if (G.state === 'bonus') return bonusSubmit();
   if (G.state !== 'kara' || V.sent || V.phase !== 'input') return;
@@ -134,9 +139,10 @@ function submitAnswer() {
   if (!raw) return;
   const kana = norm(raw);
   const bad = msg => { answerEl.classList.remove('bad'); void answerEl.offsetWidth; answerEl.classList.add('bad'); hintEl.textContent = msg; SFX.miss(); };
-  if (aiMode !== 'on' && !KANA_RE.test(kana)) return bad('AI審査オフのため、ひらがな・カタカナで（漢字は変換せずEnter）');
+  const kk = aiMode !== 'on' && !KANA_RE.test(kana) ? kanaFor(V.word, raw) : '';
+  if (aiMode !== 'on' && !KANA_RE.test(kana) && !kk) return bad('ひらがなで入力してね（変換せずにEnter）');
   if (!JA_RE.test(raw)) return bad('日本語の言葉で返して');
-  V.sent = true; V.sendSec = Math.max(0, AT() - V.t0); V.raw = raw; V.reading = KANA_RE.test(kana) ? kana : ''; V.phase = 'sent';
+  V.sent = true; V.sendSec = Math.max(0, AT() - V.t0); V.raw = raw; V.reading = KANA_RE.test(kana) ? kana : (typeof kk !== 'undefined' && kk) || ''; V.phase = 'sent';
   answerEl.disabled = sendEl.disabled = true; SFX.scratch(); SFX.ui();
   $('slot').classList.add('filled'); $('slot').innerHTML = `<span class="raw">${raw.replace(/[<>&]/g, '')}</span>`;
   hintEl.textContent = 'LOCK IN! 空欄でモンスターが歌うよ'; react('wow');
@@ -156,7 +162,13 @@ function reveal() {
   const model = !!(q && V.sent && (V.reading === q.a || nr === q.a || nr === norm(q.k)));
   const ans = model ? q.a : V.reading;
   const r = combine(rhymeCore(V.word, ans), V.ai);
-  if (model) { r.grade = Math.max(r.grade, r.R >= 5 || (V.ai && (V.ai.play + V.ai.punch) >= 2) ? 5 : 4); r.note = '模範解答！ヒントを読み切った'; }
+  if (model) { r.grade = Math.max(r.grade, r.R >= 5 || (V.ai && (V.ai.play + V.ai.punch) >= 2) ? 5 : 4); r.note = '模範解答！ヒントを読み切った'; r.model = true; }
+  if (!model && V.sent && ans && !V.ai) {
+    // no AI: the word must exist (built-in dictionary of ~77k everyday readings or the hand-made answer list)
+    if (!fitHas(V.word, ans) && !LEXR.has(ans)) { r.grade = 0; r.R = 0; r.near = false; r.nodict = true; r.note = '辞書にない言葉'; }
+    // …and an answer that also makes sense in the line gets the meaning bonus the AI would give
+    else if (r.R >= 3 && fitHas(V.word, ans)) { r.fit = true; r.grade = Math.max(r.grade, Math.min(5, r.R + 1)); r.note = '韻も意味もハマった！'; }
+  } else if (!model && V.ai && r.R >= 3 && fitHas(V.word, ans)) { r.fit = true; r.grade = Math.max(r.grade, Math.min(5, r.R + 1)); }
   let g = V.sent && (ans || model) ? r.grade : 0;
   r.reason = !V.sent ? '間に合わなかった' : !ans ? '読みが分からず判定できなかった（ひらがなで返すと確実）' : V.aiFail ? 'AI審査に失敗 → 韻の硬さだけで判定' : r.note;
   if (MODE().strict && g > 0 && !model && r.R < 3) { g = 0; r.reason = `韻が浅い：${r.note}`; r.strictMiss = true; }
@@ -175,7 +187,7 @@ function reveal() {
   { const mark = els => els.forEach((e, i) => { e.classList.remove('vh', 'vm'); e.classList.add(els.length - 1 - i < r.k ? 'vh' : 'vm'); });
     mark([...$('kl1').querySelectorAll('.m.rw')]); const sl = [...$('slot').querySelectorAll('.m.sl')]; if (sl.length) mark(sl);
     else if (ans) { $('slot').innerHTML = moras(ans).map(m => `<span class="m sl">${m}<em>${vowelsOf([m])[0]}</em></span>`).join(''); mark([...$('slot').querySelectorAll('.m.sl')]); } }
-  if (q) { const alt = typeof rhymeIdeas === 'function' ? rhymeIdeas(V.word, q.a).filter(w => w !== ans).slice(0, 2) : []; $('khint').innerHTML = `<b>${model ? 'BINGO' : 'ANSWER'}</b><span>${q.k}${q.k === q.a ? '' : `（${q.a}）`}</span><i>${q.h}</i>`; if (alt.length) $('kl2').insertAdjacentHTML('beforeend', `<span class="kalt">ほかにも踏める：${alt.join('・')}</span>`); $('khint').classList.add('ans'); }
+  if (q) { const fl = fitOf(V.word), alt = fl && fl.length ? fl.filter(([a]) => a !== ans).sort(() => Math.random() - .5).slice(0, 2).map(([a, d]) => d) : typeof rhymeIdeas === 'function' ? rhymeIdeas(V.word, q.a).filter(w => w !== ans).slice(0, 2) : []; $('khint').innerHTML = `<b>${model ? 'BINGO' : 'ANSWER'}</b><span>${q.k}${q.k === q.a ? '' : `（${q.a}）`}</span><i>${q.h}</i>`; if (alt.length) $('kl2').insertAdjacentHTML('beforeend', `<span class="kalt">ほかにも踏める：${alt.join('・')}</span>`); $('khint').classList.add('ans'); }
   if (q) $('khint').hidden = false;
   if (g > 0) addCoins([0, 2, 4, 6, 10, 15][g]);
   if (g > 0 && r.raw) { G.lastAns = r.raw; PRG.words = [...(PRG.words || []).filter(x => x !== r.raw), r.raw].slice(-16); }
@@ -218,7 +230,7 @@ function reveal() {
     const loss = MISS * (1 + RND() * .25);
     if (!G.endless) { G.bar = Math.max(0, G.bar - loss); gaugePop(`-${Math.round(loss * 100)}%`, true); }
     const gEl = $('gauge'); gEl.classList.remove('hurt', 'mehurt'); void gEl.offsetWidth; gEl.classList.add('mehurt');
-    slam(!V.sent ? '間に合わず!' : ai && !ai.exists && !LEXR.has(r.A.join('')) ? 'ないわ!' : ai && ai.ng ? 'アウト!' : r.strictMiss ? '甘い!' : 'ハズした!', G.endless ? (G.guarded ? (G.guarded = false, guardFx(), '🛡 GUARD!! ライフ無事') : `LIFE ${'♥'.repeat(G.hp)}${'♡'.repeat(Math.max(0, G.hpMax - G.hp))}`) : `${OPPN().n} HP +${Math.round(loss * 100)}%`, 'g0', V.sent ? r.reason : ''); skyU.uHurt.value = 1;
+    slam(!V.sent ? '間に合わず!' : r.nodict ? 'ないわ!' : ai && !ai.exists && !LEXR.has(r.A.join('')) ? 'ないわ!' : ai && ai.ng ? 'アウト!' : r.strictMiss ? '甘い!' : 'ハズした!', G.endless ? (G.guarded ? (G.guarded = false, guardFx(), '🛡 GUARD!! ライフ無事') : `LIFE ${'♥'.repeat(G.hp)}${'♡'.repeat(Math.max(0, G.hpMax - G.hp))}`) : `${OPPN().n} HP +${Math.round(loss * 100)}%`, 'g0', V.sent ? r.reason : ''); skyU.uHurt.value = 1;
     vignette(VIG[0], .85); SFX.miss(); react('hurt'); shakeStage(); $('kara').classList.add('g0');
   }
   setMusicLevel(); updateHud(); save();

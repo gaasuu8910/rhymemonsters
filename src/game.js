@@ -638,7 +638,7 @@ function showResult(r, ans) {
   const meter = (v, m) => `<span class="meter">${Array.from({ length: m }, (_, i) => `<i class="${i < v ? 'on' : ''}"></i>`).join('')}</span>`;
   const ai = r.ai;
   $('jpanel').innerHTML = !ans ? '' : ai ? `<span class="s">韻 ${meter(Math.round(r.Rx ?? r.R), 5)}</span><span class="s">耳 ${meter(ai.ear, 2)}</span><span class="s">意味 ${meter(ai.link, 2)}</span><span class="s">言葉遊び ${meter(ai.play, 2)}</span><span class="s">パンチ ${meter(ai.punch, 1)}</span>${ai.tags.map(t => `<span class="tag">${t.replace(/[<>&]/g, '')}</span>`).join('')}${ai.comment ? `<span class="cmt">JUDGE「${ai.comment.replace(/[<>&]/g, '')}」</span>` : ''}${!ai.exists && !LEXR.has(r.A.join('')) ? '<span class="tag" style="background:var(--bad)">辞書にない言葉</span>' : ''}`
-    : `<span class="s">韻 ${meter(r.R, 5)}</span><span>AI審査オフ：韻の硬さのみ</span>`;
+    : `<span class="s">韻 ${meter(r.R, 5)}</span><span class="s">意味 ${meter(r.fit || r.model ? 2 : 0, 2)}</span>${r.fit ? '<span class="tag">文脈◎</span>' : ''}${r.nodict ? '<span class="tag">辞書にない</span>' : ''}`;
   const n = Math.max(r.P.length, r.A.length);
   const color = ['', 'var(--g1)', 'var(--g2)', 'var(--g3)', 'var(--g4)'][r.grade];
   const rowHtml = (ms, vs, label) => {
