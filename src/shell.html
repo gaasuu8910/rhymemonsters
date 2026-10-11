@@ -1246,6 +1246,33 @@ body:has(#tut:not([hidden])) .console, body:has(#tut:not([hidden])) .cmd { displ
 .ov2 .go.hot, .ov2 .go.pw.hot { animation: hotGlow .7s ease-in-out infinite alternate !important; }
 .ov2h { font: 800 italic 22px var(--f-disp, sans-serif); text-align: center; color: #D4FF3A; letter-spacing: .02em; }
 @keyframes gainPop { from { opacity: 0; transform: scale(.4) rotate(-6deg); } to { opacity: 1; transform: none; } }
+
+/* v58: share CTA on the rank step, blinking power-up, card options, no photo studio */
+.ov1 { grid-template-columns: 1fr !important; }
+.sharecta { appearance: none; display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: center; text-align: left; padding: 8px 12px 8px 8px; border-radius: 12px; border: 2px solid #0E0B22; background: #fff; color: #0E0B22; cursor: pointer; box-shadow: 5px 5px 0 #1D9BF0; }
+.sharecta:active { transform: translate(3px, 3px); box-shadow: 2px 2px 0 #1D9BF0; }
+.scimg { width: 62px; height: 78px; border-radius: 6px; overflow: hidden; background: linear-gradient(135deg, #2438FF, #7A2BFF); transform: rotate(-6deg); box-shadow: 3px 3px 0 #0E0B22; position: relative; }
+.scimg img { width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity .4s; } .scimg.on img { opacity: 1; }
+.scimg::after { content: ""; position: absolute; inset: 0; background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,.7) 45%, transparent 60%); transform: translateX(-120%); animation: shine 2.4s ease-in-out infinite; }
+@keyframes shine { 0%, 40% { transform: translateX(-120%); } 80%, 100% { transform: translateX(120%); } }
+.sct { display: grid; gap: 2px; } .sct b { font: 400 16px var(--f-jp); } .sct small { font: 700 11px var(--f-body); color: #555; } .sct em { font: 800 13px var(--f-body); font-style: normal; color: #fff; background: #0E0B22; padding: 5px 10px; border-radius: 99px; justify-self: start; margin-top: 3px; }
+@keyframes blinkUp { 0%, 100% { background: #7A2BFF; color: #fff; } 50% { background: #D4FF3A; color: #0E0B22; } }
+@keyframes blinkSub { 0%, 100% { background: var(--ink-2); color: var(--bone); border-color: #D4FF3A; } 50% { background: #D4FF3A; color: #0E0B22; } }
+.ov2 .go.pw.blink { animation: blinkUp .8s steps(1, end) infinite, hotGlow .8s ease-in-out infinite alternate !important; position: relative; }
+.ov2 .go.pw.blink small { opacity: 1; }
+.pwsub .go.blink { animation: blinkSub .8s steps(1, end) infinite !important; border: 2px solid #D4FF3A; }
+.upb { position: absolute; right: -8px; top: -12px; text-decoration: none; font: 800 12px/1 var(--f-mono); background: #FF4D1A; color: #fff; padding: 5px 8px; border-radius: 99px; border: 2px solid #0E0B22; transform: rotate(8deg); animation: buyPulse .6s ease-in-out infinite alternate; }
+/* hub: power-up buttons shout when they can do something */
+@keyframes hubBlink { 0%, 100% { filter: drop-shadow(4px 4px 0 rgba(0,0,0,.55)) brightness(1); } 50% { filter: drop-shadow(0 0 12px #D4FF3A) brightness(1.35); } }
+.cmd .ci.canbuy, .evo-chip.ready { animation: hubBlink .9s ease-in-out infinite !important; }
+.evo-chip.ready::after { content: "UP!"; position: absolute; right: -6px; top: -10px; font: 800 10px var(--f-mono); background: #FF4D1A; color: #fff; padding: 2px 6px; border-radius: 99px; } .evo-chip { position: relative; }
+/* the photo studio lives inside the post screen now */
+#photoBtn { display: none !important; }
+@media (max-width: 640px) { .cmd { grid-template-columns: repeat(3, 1fr) !important; } .cmd > .chips2, .cmd > .cmd-duo, .cmd > .ci.big, .cmd > .ci.endless { grid-column: 1 / -1 !important; } }
+.pr-opts { display: grid; gap: 6px; } .pro { display: grid; grid-template-columns: 54px 1fr; align-items: center; gap: 6px; } .pro small { font: 700 10px var(--f-mono); color: var(--mute); letter-spacing: .08em; }
+.pro .chips-x { display: flex; gap: 5px; overflow-x: auto; scrollbar-width: none; } .pro .chips-x button { flex: none; appearance: none; border: 1.5px solid var(--ink-3); background: var(--ink-2); color: var(--bone); font: 700 12px var(--f-body); padding: 6px 10px; border-radius: 99px; display: inline-flex; align-items: center; gap: 5px; cursor: pointer; white-space: nowrap; }
+.pro .chips-x button.on { background: #D4FF3A; color: #0E0B22; border-color: #0E0B22; } .pro .chips-x button i { width: 14px; height: 14px; border-radius: 50%; border: 2px solid; }
+.pr img { max-height: 46vh !important; }
 </style>
 
 <div id="app">
@@ -1438,6 +1465,7 @@ body:has(#tut:not([hidden])) .console, body:has(#tut:not([hidden])) .cmd { displ
         <div class="card pr">
           <div class="eyebrow">宣材写真</div>
           <img id="prImg" alt="撮影した宣材写真">
+          <div class="pr-opts" id="prOpts"></div>
           <p class="pnote" id="prNote"></p>
           <div class="btns"><button class="go" id="prSave" hidden>画像を保存</button><button class="go" id="prX">Xにポスト</button><button class="go sub" id="prBack">撮りなおす</button></div>
         </div>

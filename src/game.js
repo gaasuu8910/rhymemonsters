@@ -552,7 +552,7 @@ function setMusicLevel() { if (Seq.mode !== 'battle') return; Seq.level = G.bar 
 const ENDLESS_LEN = [[3, 3], [3, 4], [4, 4], [4, 5], [5, 5], [5, 6], [6, 7], [6, 99]];
 function pickWord(ease) {
   if (G.daily && G.dailyList) { const w = G.dailyList[Math.min(4, V.n - 1)]; G.recent.push(w); return w; }
-  const [lo, hi0] = G.endless ? ENDLESS_LEN[Math.min(ENDLESS_LEN.length - 1, Math.floor((G.hits || 0) / 3))] : RU().len, hi = ease && !G.endless ? lo : hi0; // after a miss: the shortest prompts of this round, from the curated list
+  const [lo, hi0] = G.endless ? ENDLESS_LEN[stair(G.hits).len] : RU().len, hi = ease && !G.endless ? lo : hi0; // after a miss: the shortest prompts of this round, from the curated list
   let pool = WORDS.filter(w => { const L = charLen(w); return L >= lo && L <= hi && !G.recent.includes(w); });
   if (!pool.length) pool = WORDS.filter(w => charLen(w) >= lo && charLen(w) <= hi);
   const ai = AIQ.filter(q => { const L = charLen(q.w); return L >= lo && L <= hi && !G.recent.includes(q.w); });

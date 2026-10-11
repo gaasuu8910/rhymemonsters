@@ -405,30 +405,38 @@ $('stClose').addEventListener('click', () => { $('status').hidden = true; if (!d
 $('stShop').addEventListener('click', () => { $('status').hidden = true; document.body.classList.remove('calm'); openShop(); });
 
 /* ---------- share cards for X: champion & endless — the monster in its current gear ---------- */
-function shareCard(o) {
+const CARD_THEMES = [['ブルー', '#2438FF', '#7A2BFF', '#D4FF3A'], ['ピンク', '#FF2E88', '#7A2BFF', '#FFE066'], ['サンセット', '#FF7A1A', '#E60012', '#FFF27A'], ['ミント', '#00C2A8', '#2438FF', '#FFFFFF'], ['モノクロ', '#151515', '#3A3A3A', '#D4FF3A']], CARD_ANG = [['ナナメ', .25], ['正面', 0], ['横顔', .8], ['うしろ', 2.6]];
+PH.opt = PH.opt || { th: 0, ang: 0, line: 0 };
+function shareCard(o, preview) {
+  PH.lastO = o; const OP = PH.opt, TH = CARD_THEMES[OP.th % CARD_THEMES.length], AC = TH[3];
   const W = 1080, H = 1350, cv2 = document.createElement('canvas'); cv2.width = W; cv2.height = H; const x = cv2.getContext('2d');
   const FJ = '"Dela Gothic One", "Hiragino Sans", sans-serif', FD = '"Bricolage Grotesque", "Arial Black", sans-serif', FM = '"Martian Mono", ui-monospace, monospace';
-  const g = x.createLinearGradient(0, 0, W, H); g.addColorStop(0, '#2438FF'); g.addColorStop(1, '#7A2BFF'); x.fillStyle = g; x.fillRect(0, 0, W, H);
-  x.save(); x.globalAlpha = .14; x.strokeStyle = '#D4FF3A'; x.lineWidth = 6; for (let i = -H; i < W + H; i += 34) { x.beginPath(); x.moveTo(i, 0); x.lineTo(i - H * .7, H); x.stroke(); } x.restore();
-  x.fillStyle = '#D4FF3A'; x.save(); x.translate(0, 860); x.rotate(-.12); x.fillRect(-100, 0, W + 200, 120); x.restore();
+  const g = x.createLinearGradient(0, 0, W, H); g.addColorStop(0, TH[1]); g.addColorStop(1, TH[2]); x.fillStyle = g; x.fillRect(0, 0, W, H);
+  x.save(); x.globalAlpha = .14; x.strokeStyle = AC; x.lineWidth = 6; for (let i = -H; i < W + H; i += 34) { x.beginPath(); x.moveTo(i, 0); x.lineTo(i - H * .7, H); x.stroke(); } x.restore();
+  x.fillStyle = AC; x.save(); x.translate(0, 860); x.rotate(-.12); x.fillRect(-100, 0, W + 200, 120); x.restore();
   // burst + monster
   x.save(); x.translate(W / 2, 560); x.fillStyle = '#F3EFE6'; x.beginPath(); for (let i = 0; i < 28; i++) { const a = i / 28 * Math.PI * 2, r = i % 2 ? 300 : 400; x.lineTo(Math.cos(a) * r, Math.sin(a) * r); } x.fill(); x.restore();
-  const img = new Image(); let src = ''; try { src = makeThumbs(760, .25, [G.sp.id])[G.sp.id]; } catch (e) {}
+  const img = new Image(); let src = ''; try { src = makeThumbs(760, CARD_ANG[OP.ang % CARD_ANG.length][1], [G.sp.id])[G.sp.id]; } catch (e) {}
   const draw = () => {
     if (img.width) x.drawImage(img, W / 2 - 380, 180, 760, 760);
     const MR = PRG.myRhyme || {};
     const title = o.kind === 'myrhyme' ? `${MR.A}×${MR.B}` : o.kind === 'champ' ? 'CHAMPION' : o.kind === 'endless' ? `${G.hits || 0}韻 ${G.maxBpm || 120}BPM` : 'RHYME BATTLE';
-    x.textAlign = 'center'; x.font = o.kind === 'myrhyme' ? `400 120px ${FJ}` : `800 italic ${o.kind === 'endless' ? 150 : 170}px ${FD}`; x.lineJoin = 'round'; x.lineWidth = 22; x.strokeStyle = '#0E0B22'; x.strokeText(title, W / 2, 1060, W - 80); x.fillStyle = '#D4FF3A'; x.fillText(title, W / 2, 1060, W - 80);
+    x.textAlign = 'center'; x.font = o.kind === 'myrhyme' ? `400 120px ${FJ}` : `800 italic ${o.kind === 'endless' ? 150 : 170}px ${FD}`; x.lineJoin = 'round'; x.lineWidth = 22; x.strokeStyle = '#0E0B22'; x.strokeText(title, W / 2, 1060, W - 80); x.fillStyle = AC; x.fillText(title, W / 2, 1060, W - 80);
     const sub = o.kind === 'myrhyme' ? 'MY RHYME' : o.kind === 'champ' ? `${MODES[o.mode || G.mode].cup} 優勝！` : o.kind === 'endless' ? `${(G.endScore || 0).toLocaleString()}pt · RANK ${ERANKS[rankIx(G.endScore || 0)][0]}「${ERANKS[rankIx(G.endScore || 0)][1]}」` : ROUND[RND()];
     x.font = `400 64px ${FJ}`; x.lineWidth = 14; x.strokeText(sub, W / 2, 1160, W - 80); x.fillStyle = '#fff'; x.fillText(sub, W / 2, 1160, W - 80);
-    x.font = `400 56px ${FJ}`; x.fillStyle = '#F3EFE6'; x.textAlign = 'left'; x.fillText(petName(), 70, 120); { const pl = (PUNCH[G.sp.id] || PUNCH[0] || [''])[0]; if (pl) { x.font = `400 30px ${FJ}`; x.fillStyle = '#FFE066'; x.fillText(`「${pl}」`, 70, 210, W - 380); } } x.font = `700 28px ${FM}`; x.fillStyle = '#D4FF3A'; x.fillText(`${G.sp.name} · ${STAGE_NAME[G.sp.stage]}`, 74, 165);
+    x.font = `400 56px ${FJ}`; x.fillStyle = '#F3EFE6'; x.textAlign = 'left'; x.fillText(petName(), 70, 120); { const PL = PUNCH[G.sp.id] || PUNCH[0] || [''], pl = PL[OP.line % PL.length]; if (pl) { x.font = `400 30px ${FJ}`; x.fillStyle = '#FFE066'; x.fillText(`「${pl}」`, 70, 210, W - 380); } } x.font = `700 28px ${FM}`; x.fillStyle = AC; x.fillText(`${G.sp.name} · ${STAGE_NAME[G.sp.stage]}`, 74, 165);
     const S = ST(); x.font = `700 26px ${FM}`; x.textAlign = 'right'; x.fillStyle = '#fff'; STAT_KEYS.forEach(([k, ja, en], i) => x.fillText(`${en} ${S[k]}`, W - 70, 90 + i * 34));
-    const BL = o.kind === 'myrhyme' ? null : bestLine(); if (BL) { x.textAlign = 'center'; x.font = `400 40px ${FJ}`; x.lineWidth = 10; x.strokeStyle = '#0E0B22'; const t2 = `BEST「${BL.w}」→「${BL.a}」${BL.lab}`; x.strokeText(t2, W / 2, 1232, W - 100); x.fillStyle = '#D4FF3A'; x.fillText(t2, W / 2, 1232, W - 100); }
+    const BL = o.kind === 'myrhyme' ? null : bestLine(); if (BL) { x.textAlign = 'center'; x.font = `400 40px ${FJ}`; x.lineWidth = 10; x.strokeStyle = '#0E0B22'; const t2 = `BEST「${BL.w}」→「${BL.a}」${BL.lab}`; x.strokeText(t2, W / 2, 1232, W - 100); x.fillStyle = AC; x.fillText(t2, W / 2, 1232, W - 100); }
     x.textAlign = 'center'; x.font = `800 40px ${FD}`; x.fillStyle = '#F3EFE6'; x.fillText('RHYME MONSTERS / #ライムモンスターズ', W / 2, H - 60);
     PH.text = o.kind === 'myrhyme' ? `${petName()}（${G.sp.name}）が今日の一本を発表🎤\n「${MR.A}」×「${MR.B}」\n#ライモン今日の一本` : o.kind === 'champ' ? `${petName()}（${G.sp.name}）が${MODES[o.mode || G.mode].cup}で優勝！🏆🎤\n#ライムモンスターズ` : o.kind === 'endless' ? `${rankIx(G.endScore || 0) <= 1 ? '初陣！' : ''}エンドレスで ${G.hits || 0}韻・最高${G.maxBpm || 120}BPM！ ${(G.endScore || 0).toLocaleString()}pt ランク${ERANKS[rankIx(G.endScore || 0)][0]}「${ERANKS[rankIx(G.endScore || 0)][1]}」 ${petName()}（${G.sp.name}）🎤\n#ライムモンスターズ` : `${petName()}（${G.sp.name}）ライムバトル中🎤\n#ライムモンスターズ`;
-    cv2.toBlob(b => { PH.blob = b; PH.url && URL.revokeObjectURL(PH.url); PH.url = URL.createObjectURL(b); $('prImg').src = PH.url; $('prNote').textContent = ''; $('prBack').textContent = 'もどる'; $('photoResult').querySelector('.eyebrow').textContent = o.kind === 'myrhyme' ? 'MY RHYME' : o.kind === 'champ' ? '優勝カード' : o.kind === 'endless' ? 'スコアカード' : 'バトルカード'; $('photoResult').hidden = false; }, 'image/png');
+    cv2.toBlob(b => { if (preview) { const u = URL.createObjectURL(b); PH.blob = b; return preview(u); } PH.blob = b; PH.url && URL.revokeObjectURL(PH.url); PH.url = URL.createObjectURL(b); $('prImg').src = PH.url; $('prNote').textContent = ''; $('prBack').textContent = 'もどる'; $('photoResult').querySelector('.eyebrow').textContent = o.kind === 'myrhyme' ? 'MY RHYME' : o.kind === 'champ' ? '優勝カード' : o.kind === 'endless' ? 'スコアカード' : 'バトルカード'; renderCardOpts(); $('photoResult').hidden = false; }, 'image/png');
   };
   if (src) { img.onload = draw; img.src = src; } else draw();
+}
+function renderCardOpts() {
+  const el = $('prOpts'); if (!el) return; const OP = PH.opt, PL = PUNCH[G.sp.id] || PUNCH[0] || [];
+  const row = (k, lab, items) => `<div class="pro"><small>${lab}</small><div class="chips-x">${items.map((t, i) => `<button class="${OP[k] === i ? 'on' : ''}" data-k="${k}" data-i="${i}">${t}</button>`).join('')}</div></div>`;
+  el.innerHTML = row('th', 'カラー', CARD_THEMES.map(t => `<i style="background:linear-gradient(135deg,${t[1]},${t[2]});border-color:${t[3]}"></i>${t[0]}`)) + row('ang', 'アングル', CARD_ANG.map(a => a[0])) + (PL.length > 1 ? row('line', 'セリフ', PL.map(l => l.length > 9 ? l.slice(0, 9) + '…' : l)) : '');
 }
 
 /* ---------- MY RHYME: write your own A × B, your partner performs it on stage, post it ---------- */
@@ -523,3 +531,5 @@ function onbTick() {
 }
 $('coach').querySelector('.cb-skip').addEventListener('click', () => { if (ONB.step === 3) onbEnter(4); else if (ONB.step === 4) onbEnd(false); else onbEnd(false); });
 $('coach').querySelector('.cb-go').addEventListener('click', () => onbEnd(true));
+
+$('prOpts').addEventListener('click', e => { const b = e.target.closest('button[data-k]'); if (!b || !PH.lastO) return; PH.opt[b.dataset.k] = +b.dataset.i; SFX.ui(); shareCard(PH.lastO); });

@@ -25,6 +25,10 @@ function layLine(text, s0, endStep, rhymeWord, slotLen) {
 const ENDLESS_BPM = 120, ENDLESS_MAX = 210, S0k = () => ST().k;
 // a grown partner starts faster but every point is worth more: that is the trade, not a free buff
 const EVO_BPM = [120, 132, 144, 156], STAGE_MULT = [1, 1.3, 1.7, 2.2];
+// the staircase: every 3 rhymes one step — longer words, then a faster beat, then longer words again…
+// once the beat passes MAX_ZONE_BPM the short words are gone for good
+const STEP_HITS = 3, STEP_BPM = 15, MAX_ZONE_BPM = 180;
+function stair(h) { const s = Math.floor((h || 0) / STEP_HITS), lenS = Math.ceil(s / 2), tmpS = Math.floor(s / 2), bpm = Math.min(ENDLESS_MAX, startBpm() + STEP_BPM * tmpS), max = bpm >= MAX_ZONE_BPM; return { s, bpm, max, len: max ? ENDLESS_LEN.length - 1 : Math.min(ENDLESS_LEN.length - 2, lenS) }; }
 const stageIx = () => G.daily ? 0 : Math.max(0, Math.min(3, (G.sp && G.sp.stage) || 0)), startBpm = () => EVO_BPM[stageIx()], stageMult = () => STAGE_MULT[stageIx()];
 function guardFx() { try { ring('#56D9F5', { big: 8 }); ring('#FFFFFF', { y: .6, big: 6 }); flash(.5, .5); SFX.gong(); FX.glint.emit({ x: 0, y: 1.4 * rigScale, z: 0, n: 120, color: ['#56D9F5', '#FFFFFF'], speed: [3, 7], size: [.3, .7] }); document.body.classList.add('guardhit'); setTimeout(() => document.body.classList.remove('guardhit'), 900); } catch (e) {} }
 const guardEvery = d => Math.max(3, 9 - Math.round(d / 15)); // consecutive hits that charge one guard
@@ -32,6 +36,7 @@ function startVerse(step, t) {
   V.n++; V.s0 = step; V.t0 = t;
   if (!Seq.track) songFor(G.sp); // the song only changes when you continue or evolve
   const ease = !!G.ease; G.ease = false; // right after a miss: a slightly slower bar and an easier prompt
+  if (G.endless && !G.daily) G.eBpm = stair(G.hits).bpm;
   const boost = G.boost || 0, flow = 1 - ST().k / 100 * .14, bpm = G.endless ? Math.round(G.eBpm || ENDLESS_BPM) : Math.round((Math.min(196, Seq.track.bpm * 1.15 + 10) + boost) * flow); // every hit pushes the tempo up a notch; endless: same slow start for everyone, climbing every verse
   if (G.endless) { const prev = G.prevBpm || ENDLESS_BPM, dl = Math.max(0, (t - AT()) * 1000); if (bpm < prev) { setTimeout(() => banner(`<b>TEMPO DOWN ▼${bpm}</b>`, 1100), dl); G.upFrom = bpm; } else if (bpm >= (G.upFrom || ENDLESS_BPM) + 10) { G.upFrom = bpm; setTimeout(() => { banner(`<b>TEMPO UP! ▲${bpm}</b>`, 1200); skyU.uKick.value = 1.4; Cam.punch = Math.max(Cam.punch, .05); }, dl); } G.prevBpm = bpm; }
   else if (!ease && boost > (G.boostShown || 0)) setTimeout(() => { banner(`<b>TEMPO UP! ▲${bpm}</b>`, 1200); skyU.uKick.value = 1.4; Cam.punch = Math.max(Cam.punch, .05); }, Math.max(0, (t - AT()) * 1000));
@@ -69,7 +74,7 @@ function startVerse(step, t) {
   V.q = QBY[V.word] || null; $('jc').hidden = true; const noHint = !!MODE().noHint;
   const hLv = G.endless ? Math.min(G.combo >= 12 ? 3 : G.combo >= 8 ? 2 : G.combo >= 4 ? 1 : 0, (G.hits || 0) >= 22 ? 3 : (G.hits || 0) >= 15 ? 2 : (G.hits || 0) >= 9 ? 1 : 0) : 0, hOff = noHint || hLv >= 3;
   if (G.endless && hLv !== (G.hintLv || 0)) { const msg = ['HINT BACK', 'HINT DELAY ▲', 'HINT DELAY ▲▲', 'NO HINT ZONE!!'][hLv]; setTimeout(() => banner(`<b>${msg}</b>`, 1400), Math.max(0, (t - AT()) * 1000) + 300); } G.hintLv = hLv;
-  if (G.endless) { const wl = Math.min(ENDLESS_LEN.length - 1, Math.floor((G.hits || 0) / 3)); if (wl > (G.wordLv || 0)) setTimeout(() => banner(`<b>WORD LV ${wl + 1}</b><small>${ENDLESS_LEN[wl][0]}文字〜</small>`, 1400), Math.max(0, (t - AT()) * 1000) + 1500); G.wordLv = wl; }
+  if (G.endless && !G.daily) { const st = stair(G.hits), wl = st.len, dl = Math.max(0, (t - AT()) * 1000); if (st.max && !G.maxZone) { G.maxZone = true; setTimeout(() => { banner(`<small>${st.bpm} BPM OVER</small><b>MAX ZONE!!</b><small>ここからは長い単語だけ</small>`, 2200); flash(.5); SFX.crowd(1.4); ring('rainbow', { big: 7 }); }, dl + 1500); } else if (wl > (G.wordLv || 0)) setTimeout(() => { banner(`<b>WORD LV ${wl + 1} ▲</b><small>${ENDLESS_LEN[wl][0]}文字〜</small>`, 1400); flash(.3); }, dl + 1500); G.wordLv = wl; }
   V.hintSeen = false; $('khint').innerHTML = V.q && !hOff ? `<b>HINT</b><span>${V.q.h}</span><i>${moras(V.q.a).length}文字</i>` : ''; $('khint').hidden = !V.q || hOff; if (V.q && !hOff && hLv) { $('khint').hidden = true; const vn = V.n; setTimeout(() => { if (V.n === vn && V.phase === 'input' && !V.sent) $('khint').hidden = false; }, Math.max(0, (t - AT()) * 1000) + [0, .4, .7][hLv] * (V.dead - step) * V.sx * 1000); } $('khint').classList.remove('ans');
   { const q = V.q, esc = s => String(s || '').replace(/[<>&]/g, ''); // who raps which line + written-Japanese captions over the karaoke kana
     $('kl1').insertAdjacentHTML('afterbegin', `<span class="kt"><b class="who opp">${esc(opp.n)}</b>${V.lt ? `${esc(V.lt)}${esc(q ? q.d : V.word)}` : ''}</span>`);
@@ -183,7 +188,6 @@ function reveal() {
     const orig = !!(q && !model && g >= 4); // your own rhyme, not the textbook one — worth more
     const spd = G.endless && V.sent ? 1 + .6 * clamp((7 - V.sendSec) / 5) : 1; // answer early, score more
     if (G.endless) { if (spd >= 1.3) mission('speed5', 1); mission('combo10', 0, G.combo + 1); mission('hits15', 0, (G.hits || 0)); mission('bpm150', 0, Math.round(Seq.bpm)); }
-    if (G.endless) G.eBpm = Math.min(ENDLESS_MAX, (G.eBpm || ENDLESS_BPM) + 4 * (1 - S0k() / 150));
     G.origRun = orig ? (G.origRun || 0) + 1 : 0;
     if (G.endless && !G.guards && ++G.guardC >= G.guardN) { G.guards = 1; G.guardC = 0; setTimeout(() => banner('<b>🛡 GUARD READY</b>', 1200), 900); }
     if (g >= 3) { SFX.crowd(g === 5 ? 1.5 : g === 4 ? 1 : .45); crowdPop(g); }
@@ -249,7 +253,7 @@ function startBattle(endless) {
   if (!PRG.tutDone && !PRG.endBest && G.state !== 'tut') { const ps = G.state; G.state = 'tut'; return showTut(() => { G.state = ps; startBattle(endless); }); }
   audioInit(); stopDance(); hideBubble(); genQuiz(); G.endless = endless === true; document.body.classList.toggle('endless', G.endless); G.endScore = 0; $('endScore').textContent = '0';
   { const S = ST(); G.hpMax = G.endless ? 3 + Math.floor(S.h / 40) : Math.round(60 + S.h * .9); G.hp = G.hpMax; G.guards = G.endless && S.d >= 50 ? 1 : 0; G.guardC = 0; G.guardN = guardEvery(S.d); G.origRun = 0; G.skill = 0; G.skillArmed = false; updateSkill(); }
-  G.lives = 3; G.best = null; G.hits = 0; G.maxBpm = 0; G.hintLv = 0; G.wordLv = 0; G.boss = false; G.dexNew = 0; G.dres = []; G.eBpm = startBpm(); G.prevBpm = startBpm(); G.upFrom = startBpm(); G.runCoins = PRG.coins || 0; G.runExp = PRG.exp || 0; G.combo = 0; G.maxCombo = 0; G.bScore = 0; G.bStartBar = G.bar; V.n = 0; G.boost = 0; G.boostShown = 0;
+  G.lives = 3; G.best = null; G.hits = 0; G.maxBpm = 0; G.hintLv = 0; G.wordLv = 0; G.maxZone = false; G.boss = false; G.dexNew = 0; G.dres = []; G.eBpm = startBpm(); G.prevBpm = startBpm(); G.upFrom = startBpm(); G.runCoins = PRG.coins || 0; G.runExp = PRG.exp || 0; G.combo = 0; G.maxCombo = 0; G.bScore = 0; G.bStartBar = G.bar; V.n = 0; G.boost = 0; G.boostShown = 0;
   document.body.classList.add('battle'); $('combo').hidden = true; $('cont').hidden = true;
   const tk = songFor(G.sp), b0 = G.endless ? startBpm() : Math.round(Math.min(196, tk.bpm * 1.15 + 10)); Seq.battleBpm = b0; seqMode('battle', { bpm: b0 }); setMusicLevel();
   setTimeout(() => banner(`<b>♪ ${tk.id}</b><small>${tk.g} · ${b0} BPM</small>`, 2600), 2600);
@@ -380,11 +384,12 @@ function endlessOver() {
   const pw = canEvo ? '進化できる！ 速いBPMで高得点を狙え' : canBuy ? `◎で「${nb.n}」が買える！` : kids.length ? `進化まで あと EXP ${(cost - (PRG.exp || 0)).toLocaleString()}` : 'ギアで相棒をパワーアップ';
   const pal = `<div class="pal"><b>${petName()}</b>「${first ? 'EXPとコインがたまったよ！ ぼくを強くして！' : canEvo || canBuy ? 'ねえ、ぼくもっと強くなれるよ！' : hh >= 20 ? 'いまのセッション、伝説だったよ…！' : hh >= 10 ? 'のってきたね！もう1曲いこ！' : 'だいじょうぶ、一緒に練習しよ！'}」</div>`;
   $('ovMsg').innerHTML = head
-    + `<div class="ov1"><button class="go" data-act="next">次へ ▶</button><button class="go sub xpost" data-act="share" aria-label="Xにポスト">𝕏 ポスト</button></div>`
+    + `<div class="ov1"><button class="sharecta" data-act="share"><span class="scimg"><img alt=""></span><span class="sct"><b>${isBest ? '自己ベスト更新！' : 'スコアカードができた！'}</b><small>相棒と一緒にみんなに見せよう</small><em>𝕏 でポスト ▶</em></span></button><button class="go" data-act="next">次へ ▶</button></div>`
     + `<div class="ov2"><div class="ov2h">REWARD GET!</div><div class="gain"><span><i>EXP</i><b>+${earned.toLocaleString()}</b></span><span><i>COIN</i><b>◎+${coins.toLocaleString()}</b></span></div>${pal}`
     + (first ? `<button class="go big1 hot" data-act="hub">楽屋で相棒を育てる ▶</button>`
-      : `<button class="go big1" data-act="again">もう一回 ▶</button><button class="go ch pw${canEvo || canBuy ? ' hot' : ''}" data-act="power"><b>相棒を強化する</b><small>${pw}</small></button><div class="pwsub" hidden><button class="go sub" data-act="evo" ${kids.length ? '' : 'disabled'}><b>進化</b><small>${kids.length ? (canEvo ? 'できる！' : `EXP ${(PRG.exp || 0).toLocaleString()}/${cost.toLocaleString()}`) : '最終形態'}</small></button><button class="go sub" data-act="shop"><b>ショップ</b><small>◎${(PRG.coins || 0).toLocaleString()}</small></button></div><button class="go sub ch" data-act="hub"><b>楽屋へ戻る</b></button>`)
+      : `<button class="go big1" data-act="again">もう一回 ▶</button><button class="go ch pw${canEvo || canBuy ? ' hot blink' : ''}" data-act="power">${canEvo || canBuy ? '<u class="upb">UP!</u>' : ''}<b>相棒を強化する</b><small>${pw}</small></button><div class="pwsub" hidden><button class="go sub${canEvo ? ' hot blink' : ''}" data-act="evo" ${kids.length ? '' : 'disabled'}><b>進化</b><small>${kids.length ? (canEvo ? 'できる！' : `EXP ${(PRG.exp || 0).toLocaleString()}/${cost.toLocaleString()}`) : '最終形態'}</small></button><button class="go sub${canBuy ? ' hot blink' : ''}" data-act="shop"><b>ショップ</b><small>◎${(PRG.coins || 0).toLocaleString()}</small></button></div><button class="go sub ch" data-act="hub"><b>楽屋へ戻る</b></button>`)
     + `</div>`;
+  setTimeout(() => { try { shareCard({ kind: 'endless' }, u => { const im = $('ovMsg').querySelector('.scimg img'); if (im) { im.src = u; im.parentElement.classList.add('on'); } }); } catch (e) { console.error('preview', e); } }, 900);
 }
 const CLEAR_SCORE = 20000;
 
