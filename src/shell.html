@@ -1,5 +1,8 @@
 <meta charset="utf-8">
 <title>Rhyme Monsters</title>
+<link rel="icon" type="image/svg+xml" href="__FAVICON__">
+<link rel="apple-touch-icon" href="__APPLEICON__">
+<meta name="theme-color" content="#0E0B22">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,800&family=Dela+Gothic+One&family=Martian+Mono:wght@400;600;800&family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap">
@@ -1273,11 +1276,23 @@ body:has(#tut:not([hidden])) .console, body:has(#tut:not([hidden])) .cmd { displ
 .pro .chips-x { display: flex; gap: 5px; overflow-x: auto; scrollbar-width: none; } .pro .chips-x button { flex: none; appearance: none; border: 1.5px solid var(--ink-3); background: var(--ink-2); color: var(--bone); font: 700 12px var(--f-body); padding: 6px 10px; border-radius: 99px; display: inline-flex; align-items: center; gap: 5px; cursor: pointer; white-space: nowrap; }
 .pro .chips-x button.on { background: #D4FF3A; color: #0E0B22; border-color: #0E0B22; } .pro .chips-x button i { width: 14px; height: 14px; border-radius: 50%; border: 2px solid; }
 .pr img { max-height: 46vh !important; }
+
+/* v64 logo: monster-mic emblem + stacked wordmark */
+.logo { align-items: center !important; } .logo .lg-emb { display: inline-block !important; width: 30px; height: 32px; flex: none; } .logo .lg-emb svg { width: 100%; height: 100%; display: block; }
+.op-emb { width: clamp(150px, 34vw, 300px); margin: 0 0 -14px; transform-origin: 50% 90%; animation: embIn .7s cubic-bezier(.2,1.6,.4,1) both, embBob 2.4s .7s ease-in-out infinite; filter: drop-shadow(0 10px 0 rgba(0,0,0,.35)); }
+.op-emb svg { width: 100%; height: auto; display: block; }
+@keyframes embIn { from { transform: scale(.2) rotate(-30deg); opacity: 0; } }
+@keyframes embBob { 50% { transform: translateY(-6px) rotate(3deg); } }
+.op-title { transform: rotate(-6deg); font-style: italic !important; }
+.op-title .w1 { color: #D4FF3A !important; -webkit-text-stroke: 0 !important; text-shadow: .05em .05em 0 #FF4D1A, .1em .1em 0 #F3EFE6; }
+.op-title .w2 { color: #F3EFE6 !important; -webkit-text-stroke: 0 !important; font-size: .66em; margin-left: 0 !important; text-shadow: .06em .06em 0 #FF4D1A; }
+.op-title .w2::after { content: ""; display: inline-block; width: .2em; height: .9em; margin-left: .12em; background: #FF4D1A; transform: skewX(-22deg); vertical-align: -.08em; box-shadow: .05em .05em 0 #F3EFE6; }
+.op-jp2 { justify-self: start; display: inline-block; margin-top: -4px; padding: 4px 14px; background: #FF4D1A; color: #0E0B22 !important; font: 400 clamp(14px, 2.6vw, 22px) var(--f-jp) !important; letter-spacing: 0 !important; transform: rotate(-3deg); box-shadow: 4px 4px 0 #F3EFE6; }
 </style>
 
 <div id="app">
   <header class="bar">
-    <div class="logo"><b>RHYME MONSTERS<i>/</i></b><span>ライム・モンスターズ</span></div>
+    <div class="logo"><span class="lg-emb"><!--EMBLEM--></span><b>RHYME MONSTERS<i>/</i></b><span>ライム・モンスターズ</span></div>
     <div class="right">
       <span class="chip coin hdr-coin" id="coinChip" title="コイン">◎ <b data-coins id="coins">0</b></span>
       <button class="gear" id="setBtn" aria-label="設定"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M4.2 6.5l2.2 1.6M17.6 15.9l2.2 1.6M4.2 17.5l2.2-1.6M17.6 8.1l2.2-1.6"/></svg></button>
@@ -1394,8 +1409,9 @@ body:has(#tut:not([hidden])) .console, body:has(#tut:not([hidden])) .cmd { displ
       <div class="opening" id="startModal">
         <div class="op-shade"></div>
         <div class="op-main">
-          <div class="op-kicker">ライム・モンスターズ</div>
+          <div class="op-emb"><!--EMBLEM--></div>
           <h1 class="op-title" id="opTitle" aria-label="Rhyme Monsters"><span class="w1">RHYME</span><span class="w2">MONSTERS</span></h1>
+          <div class="op-jp2">ライム・モンスターズ</div>
           
           <div class="op-acts"><button class="op-start" id="opStart"><b>▶ ENDLESS</b><small>ENDLESS CHALLENGE</small></button><button class="op-hub" id="opHub"><b>楽屋へ</b></button></div>
         </div>
