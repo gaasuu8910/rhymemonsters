@@ -22,7 +22,10 @@ function layLine(text, s0, endStep, rhymeWord, slotLen) {
   if (rhymeWord) { const vs = vowelsOf(rw); rw.forEach((m, i) => out.push({ m, step: rwStart + i * rwStep, v: vs[i], rw: true })); }
   return { spans: out, rwStart, rwStep };
 }
-const ENDLESS_BPM = 120, ENDLESS_MAX = 200, S0k = () => ST().k;
+const ENDLESS_BPM = 120, ENDLESS_MAX = 210, S0k = () => ST().k;
+// a grown partner starts faster but every point is worth more: that is the trade, not a free buff
+const EVO_BPM = [120, 132, 144, 156], STAGE_MULT = [1, 1.3, 1.7, 2.2];
+const stageIx = () => G.daily ? 0 : Math.max(0, Math.min(3, (G.sp && G.sp.stage) || 0)), startBpm = () => EVO_BPM[stageIx()], stageMult = () => STAGE_MULT[stageIx()];
 function guardFx() { try { ring('#56D9F5', { big: 8 }); ring('#FFFFFF', { y: .6, big: 6 }); flash(.5, .5); SFX.gong(); FX.glint.emit({ x: 0, y: 1.4 * rigScale, z: 0, n: 120, color: ['#56D9F5', '#FFFFFF'], speed: [3, 7], size: [.3, .7] }); document.body.classList.add('guardhit'); setTimeout(() => document.body.classList.remove('guardhit'), 900); } catch (e) {} }
 const guardEvery = d => Math.max(3, 9 - Math.round(d / 15)); // consecutive hits that charge one guard
 function startVerse(step, t) {
@@ -186,7 +189,7 @@ function reveal() {
     if (g >= 3) { SFX.crowd(g === 5 ? 1.5 : g === 4 ? 1 : .45); crowdPop(g); }
     oppReact('hurt');
     const S = ST(), armed = G.skillArmed; G.skillArmed = false;
-    if (G.endless) { const mult = (1 + G.sp.stage * .08) * (1 + S.a / 200) * (armed ? 2 : 1) * (orig ? 1.5 * (1 + Math.min(4, Math.max(0, (G.origRun || 0) - 1)) * .15) : 1) * spd, ep = Math.round(g * g * 10 * mult * (1 + Math.min(G.combo, 30) * (.08 + S.c / 1000))); G.endScore = (G.endScore || 0) + ep; $('endScore').textContent = G.endScore.toLocaleString(); tapPop(innerWidth / 2, innerHeight * .4, `+${ep}`, 34, '#D4FF3A'); }
+    if (G.endless) { const mult = stageMult() * (1 + S.a / 200) * (armed ? 2 : 1) * (orig ? 1.5 * (1 + Math.min(4, Math.max(0, (G.origRun || 0) - 1)) * .15) : 1) * spd, ep = Math.round(g * g * 10 * mult * (1 + Math.min(G.combo, 30) * (.08 + S.c / 1000))); G.endScore = (G.endScore || 0) + ep; $('endScore').textContent = G.endScore.toLocaleString(); tapPop(innerWidth / 2, innerHeight * .4, `+${ep}`, 34, '#D4FF3A'); }
     const gain = (G.endless ? 0 : 1) * BASE[g] * RU().gain * (1 + Math.min(G.combo, 10) * .03) * (.75 + S.a / 100 * .6) * (armed ? 2 : 1) * (orig ? 1.25 : 1);
     if (!G.endless) G.skill = Math.min(100, (G.skill || 0) + g * (5 + S.c * .14)); updateSkill(); if (armed) { slam('CHARISMA HIT!!', '', 'g5 evo'); SFX.crowd(2); }
     feed(r.A, g, gain);
@@ -202,9 +205,12 @@ function reveal() {
     react(g >= 3 ? 'joy' : 'nod');
     $('kara').classList.add('g' + g);
     if (G.combo >= 2) { const c = $('combo'); c.hidden = false; $('comboN').textContent = G.combo; c.classList.remove('bump'); void c.offsetWidth; c.classList.add('bump'); }
+  } else if (G.endless && V.sent && r.near && !r.ng && !(ai && (ai.ng || (!ai.exists && !LEXR.has(r.A.join('')))))) {
+    // one vowel off: no hit, no damage — the combo survives, the tempo holds
+    slam('おしい!', 'ノーダメ回避 ・ 母音1つズレ', 'g1', ''); SFX.aww(); react('hurt'); oppReact('hurt'); $('kara').classList.add('g1');
+    G.nearRun = (G.nearRun || 0) + 1;
   } else {
-    if (G.endless) G.eBpm = Math.max(ENDLESS_BPM, (G.eBpm || ENDLESS_BPM) - 8);
-    G.combo = G.endless ? Math.floor(G.combo / 2) : 0; $('combo').hidden = !G.combo; if (G.endless) { if (G.guards > 0) { G.guards--; G.guarded = true; } else G.hp = Math.max(0, G.hp - 1); G.guardC = 0; G.lives = G.hp; } else { const S = ST(), dmg = Math.round(42 * (1 - S.d / 170)); G.hp = Math.max(0, G.hp - dmg); G.lives = G.hp > 0 ? 1 : 0; gaugePop(`-${dmg} HP`, true); } G.ease = true; oppReact('joy'); G.boost = Math.max(0, (G.boost || 0) - 6); G.boostShown = G.boost; SFX.aww();
+    G.combo = G.endless ? Math.floor(G.combo / 2) : 0; $('combo').hidden = !G.combo; if (G.endless) { if (G.guards > 0) { G.guards--; G.guarded = true; } else G.hp = Math.max(0, G.hp - 1); G.guardC = 0; G.lives = G.hp; } else { const S = ST(), dmg = Math.round(42 * (1 - S.d / 170)); G.hp = Math.max(0, G.hp - dmg); G.lives = G.hp > 0 ? 1 : 0; gaugePop(`-${dmg} HP`, true); } oppReact('joy'); SFX.aww();
     const loss = MISS * (1 + RND() * .25);
     if (!G.endless) { G.bar = Math.max(0, G.bar - loss); gaugePop(`-${Math.round(loss * 100)}%`, true); }
     const gEl = $('gauge'); gEl.classList.remove('hurt', 'mehurt'); void gEl.offsetWidth; gEl.classList.add('mehurt');
@@ -243,12 +249,12 @@ function startBattle(endless) {
   if (!PRG.tutDone && !PRG.endBest && G.state !== 'tut') { const ps = G.state; G.state = 'tut'; return showTut(() => { G.state = ps; startBattle(endless); }); }
   audioInit(); stopDance(); hideBubble(); genQuiz(); G.endless = endless === true; document.body.classList.toggle('endless', G.endless); G.endScore = 0; $('endScore').textContent = '0';
   { const S = ST(); G.hpMax = G.endless ? 3 + Math.floor(S.h / 40) : Math.round(60 + S.h * .9); G.hp = G.hpMax; G.guards = G.endless && S.d >= 50 ? 1 : 0; G.guardC = 0; G.guardN = guardEvery(S.d); G.origRun = 0; G.skill = 0; G.skillArmed = false; updateSkill(); }
-  G.lives = 3; G.best = null; G.hits = 0; G.maxBpm = 0; G.hintLv = 0; G.wordLv = 0; G.boss = false; G.dexNew = 0; G.dres = []; G.eBpm = ENDLESS_BPM; G.prevBpm = ENDLESS_BPM; G.upFrom = ENDLESS_BPM; G.runCoins = PRG.coins || 0; G.runExp = PRG.exp || 0; G.combo = 0; G.maxCombo = 0; G.bScore = 0; G.bStartBar = G.bar; V.n = 0; G.boost = 0; G.boostShown = 0;
+  G.lives = 3; G.best = null; G.hits = 0; G.maxBpm = 0; G.hintLv = 0; G.wordLv = 0; G.boss = false; G.dexNew = 0; G.dres = []; G.eBpm = startBpm(); G.prevBpm = startBpm(); G.upFrom = startBpm(); G.runCoins = PRG.coins || 0; G.runExp = PRG.exp || 0; G.combo = 0; G.maxCombo = 0; G.bScore = 0; G.bStartBar = G.bar; V.n = 0; G.boost = 0; G.boostShown = 0;
   document.body.classList.add('battle'); $('combo').hidden = true; $('cont').hidden = true;
-  const tk = songFor(G.sp), b0 = G.endless ? ENDLESS_BPM : Math.round(Math.min(196, tk.bpm * 1.15 + 10)); Seq.battleBpm = b0; seqMode('battle', { bpm: b0 }); setMusicLevel();
+  const tk = songFor(G.sp), b0 = G.endless ? startBpm() : Math.round(Math.min(196, tk.bpm * 1.15 + 10)); Seq.battleBpm = b0; seqMode('battle', { bpm: b0 }); setMusicLevel();
   setTimeout(() => banner(`<b>♪ ${tk.id}</b><small>${tk.g} · ${b0} BPM</small>`, 2600), 2600);
   G.state = 'countin'; V.cntS = Infinity;
-  if (G.endless) { G.endOpp = pickRival(); G.lastRot = 0; spawnOpp(); camReset(); slam(`VS ${G.endOpp.n}`, 'ENDLESS', 'g5'); } else { spawnOpp(); camReset(); showVS(); } shot('wide'); SFX.milestone(); flash(.4);
+  if (G.endless) { G.endOpp = pickRival(); G.lastRot = 0; spawnOpp(); camReset(); slam(`VS ${G.endOpp.n}`, stageIx() ? `BPM ${startBpm()} START ・ SCORE ×${stageMult()}` : 'ENDLESS', 'g5'); } else { spawnOpp(); camReset(); showVS(); } shot('wide'); SFX.milestone(); flash(.4);
   ring('rainbow'); confetti(80, { y: 1.5, burst: 6 });
   answerEl.value = ''; $('result').innerHTML = ''; $('jpanel').innerHTML = ''; hintEl.textContent = '上の行の最後の言葉と韻を踏んで、下の行の空欄を埋めよう。';
   updateHud();
@@ -351,30 +357,34 @@ $('skillBtn').addEventListener('click', e => {
 const ERANKS = [['F', 'ベビーMC', 0, '#9AA0AE'], ['E', '路上デビュー', 1000, '#7FD4FF'], ['D', 'サイファー常連', 3000, '#56D9F5'], ['C', 'フロアの主役', 6000, '#2EE88A'], ['B', 'ヘッドライナー', 10000, '#D4FF3A'], ['A', 'チャンピオン', 20000, '#FFC93D'], ['S', 'レジェンドMC', 30000, '#FF8A3D'], ['SS', 'ライムモンスター', 50000, '#FF5C8A']];
 const rankIx = sc => { let i = 0; ERANKS.forEach((r, k) => { if (sc >= r[2]) i = k; }); return i; };
 function rankBoard(el, sc, best) {
-  const me = rankIx(sc), bi = rankIx(best), nx = ERANKS[me + 1], cur = ERANKS[me];
-  const pct = nx ? Math.max(0, Math.min(100, (sc - cur[2]) / (nx[2] - cur[2]) * 100)) : 100;
-  el.innerHTML = `<div class="rk-strip">${ERANKS.map((r, k) => `<i data-k="${k}" style="--rc:${r[3]}">${r[0]}${k === bi && bi !== me ? '<u>BEST</u>' : ''}</i>`).join('')}</div>`
-    + `<div class="rk-me" style="--rc:${cur[3]}"><b>${cur[0]}</b><span>${cur[1]}</span><div class="rk-bar"><s style="width:0%"></s></div><em>${nx ? `NEXT ${nx[0]} まで ${(nx[2] - sc).toLocaleString()}` : 'TOP RANK!!'}</em></div>`;
-  el.hidden = false; const cells = [...el.querySelectorAll('.rk-strip i')], meEl = el.querySelector('.rk-me');
-  cells.forEach((c, k) => { if (k > me) return; setTimeout(() => { c.classList.add('lit'); try { SFX.hit(k === me ? 3 : 1); } catch (e) {} if (k === me) { c.classList.add('me'); meEl.classList.add('on'); el.querySelector('.rk-bar s').style.width = pct + '%'; if (me >= 4) { SFX.crowd(1 + (me - 4) * .3); confetti(60 + me * 20, { y: 2.5, burst: 6 }); } } }, 300 + k * 160); });
+  const me = rankIx(sc), bi = rankIx(best), nx = ERANKS[me + 1], n = ERANKS.length;
+  // a pyramid: SS on top, F at the base — you climb it
+  el.innerHTML = `<div class="pyr">${ERANKS.map((r, k) => `<div class="pr${k}" data-k="${k}" style="--rc:${r[3]};--wk:${100 - k * 8.5}%"><i>${r[0]}</i><b>${r[1]}${k === bi && bi !== me ? '<u>BEST</u>' : ''}</b><em>${r[2].toLocaleString()}</em></div>`).reverse().join('')}</div>`
+    + `<div class="rnext">${nx ? `NEXT <b>${nx[0]}</b> まで あと ${(nx[2] - sc).toLocaleString()} pt` : 'TOP RANK!!'}</div>`;
+  el.hidden = false; const rows = [...el.querySelectorAll('.pyr > div')].reverse();
+  rows.forEach((row, k) => { if (k > me) return; setTimeout(() => { row.classList.add('lit'); try { SFX.hit(k === me ? 3 : 1); } catch (e) {} if (k === me) { row.classList.add('me'); if (me >= 4) { SFX.crowd(1 + (me - 4) * .3); confetti(60 + me * 20, { y: 2.5, burst: 6 }); } } }, 300 + k * 200); });
 }
 function endlessOver() {
+  const firstRun = !PRG.onbDone && !(PRG.endBest > 0); if (!firstRun && !PRG.onbDone) PRG.onbDone = true; G.onbPending = firstRun;
   hideKara(); seqMode('hub', { bpm: 92 }); const sc = G.endScore || 0, best = Math.max(PRG.endBest || 0, sc), isBest = sc > (PRG.endBest || 0); PRG.endBest = best; addCoins(Math.round(sc / 40), true); addExp(Math.round(sc / 8)); save();
-  $('overEy').textContent = isBest ? 'ENDLESS MC BATTLE · NEW RECORD!!' : 'ENDLESS MC BATTLE · GAME OVER'; $('overTitle').textContent = `${G.hits || 0}韻・最高${G.maxBpm || ENDLESS_BPM}BPM`;
+  $('overEy').textContent = isBest ? 'ENDLESS MC BATTLE · NEW RECORD!!' : 'ENDLESS MC BATTLE · GAME OVER'; $('overTitle').textContent = `${G.hits || 0}韻・最高${G.maxBpm || startBpm()}BPM`;
   $('ovScore').textContent = sc.toLocaleString(); $('ovCombo').textContent = G.maxCombo; $('ovCombo').nextElementSibling.textContent = 'MAX COMBO'; $('ovGauge').textContent = best.toLocaleString();
-  $('ovGauge').nextElementSibling.textContent = 'BEST'; $('ovMsg').textContent = ''; $('ovShare').hidden = false; $('overModal').hidden = false; $('overModal').classList.add('endres'); rankBoard($('ovRanks'), sc, best);
+  $('ovGauge').nextElementSibling.textContent = 'BEST'; $('ovMsg').textContent = ''; $('ovShare').hidden = false; const M = $('overModal'); M.hidden = false; M.classList.add('endres'); M.dataset.step = '1'; rankBoard($('ovRanks'), sc, best);
   if (isBest) { confetti(200, { y: 2.5, burst: 8 }); SFX.crowd(1.6); }
-  const hh = G.hits || 0, earned = Math.max(1, (PRG.exp || 0) - (G.runExp || 0)), coins = (PRG.coins || 0) - (G.runCoins || 0), chips = [];
-  chips.push(`<span class="rw exp"><i>EXP</i><b>+${earned}</b></span>`, `<span class="rw coin"><i>◎</i><b>+${coins}</b></span>`);
-  { const kids = G.sp.kids || []; if (kids.length) { const cost = EVO_COST[BY[kids[0]].stage], have = PRG.exp || 0, left = cost - have;
-    chips.push(left <= 0 ? `<span class="rw evo hot w2" data-go="evo"><i>EVOLVE</i><b>進化できる！</b></span>` : `<span class="rw evo w2"><i>進化まで</i><b>EXP ${left}</b><s style="--p:${Math.round(Math.min(1, have / cost) * 100)}%"></s></span>`); } }
-  { const nb = typeof nextBuy === 'function' && nextBuy(); if (nb) chips.push((PRG.coins || 0) >= nb.p ? `<span class="rw shop hot w2" data-go="shop"><i>SHOP</i><b>「${nb.n}」買える！</b></span>` : `<span class="rw shop w2"><i>SHOP</i><b>あと◎${nb.p - (PRG.coins || 0)}で「${nb.n}」</b></span>`); }
-  chips.push(`<span class="rw boss"><i>BOSSまで</i><b>${18 - (hh % 18)}韻</b></span>`);
-  { const dx = PRG.dex || {}, stars = Object.values(dx).reduce((n, b) => n + (b & 1 ? 1 : 0) + (b & 2 ? 1 : 0) + (b & 4 ? 1 : 0), 0); chips.push(`<span class="rw dex"><i>韻図鑑</i><b>★${stars}${G.dexNew ? `<u>+${G.dexNew}</u>` : ''}</b></span>`); }
-  const pal = `<div class="pal"><b>${petName()}</b>「${hh >= 20 ? 'いまのセッション、伝説だったよ…！' : hh >= 10 ? 'のってきたね！もう1曲いこ！' : hh >= 4 ? 'いい感じ！次はもっと踏める！' : 'だいじょうぶ、一緒に練習しよ！'}」</div>`;
   let head = '';
   if (sc >= CLEAR_SCORE && !PRG.cleared[G.mode]) { PRG.cleared[G.mode] = true; PRG.wins[G.mode] = (PRG.wins[G.mode] || 0) + 1; save(); G.pendingEnd = { first: true, mode: G.mode }; head = '<b class="clr">RANK A 到達 ― 制覇！</b>'; }
-  $('ovMsg').innerHTML = head + pal + `<div class="rws">${chips.join('')}</div>`;
+  const hh = G.hits || 0, earned = Math.max(1, (PRG.exp || 0) - (G.runExp || 0)), coins = Math.max(0, (PRG.coins || 0) - (G.runCoins || 0));
+  const first = firstRun;
+  // what powering up would buy right now — the reason to press the button
+  const kids = G.sp.kids || [], cost = kids.length ? EVO_COST[BY[kids[0]].stage] : 0, canEvo = kids.length && (PRG.exp || 0) >= cost, nb = typeof nextBuy === 'function' && nextBuy(), canBuy = nb && (PRG.coins || 0) >= nb.p;
+  const pw = canEvo ? '進化できる！ 速いBPMで高得点を狙え' : canBuy ? `◎で「${nb.n}」が買える！` : kids.length ? `進化まで あと EXP ${(cost - (PRG.exp || 0)).toLocaleString()}` : 'ギアで相棒をパワーアップ';
+  const pal = `<div class="pal"><b>${petName()}</b>「${first ? 'EXPとコインがたまったよ！ ぼくを強くして！' : canEvo || canBuy ? 'ねえ、ぼくもっと強くなれるよ！' : hh >= 20 ? 'いまのセッション、伝説だったよ…！' : hh >= 10 ? 'のってきたね！もう1曲いこ！' : 'だいじょうぶ、一緒に練習しよ！'}」</div>`;
+  $('ovMsg').innerHTML = head
+    + `<div class="ov1"><button class="go" data-act="next">次へ ▶</button><button class="go sub xpost" data-act="share" aria-label="Xにポスト">𝕏 ポスト</button></div>`
+    + `<div class="ov2"><div class="ov2h">REWARD GET!</div><div class="gain"><span><i>EXP</i><b>+${earned.toLocaleString()}</b></span><span><i>COIN</i><b>◎+${coins.toLocaleString()}</b></span></div>${pal}`
+    + (first ? `<button class="go big1 hot" data-act="hub">楽屋で相棒を育てる ▶</button>`
+      : `<button class="go big1" data-act="again">もう一回 ▶</button><button class="go ch pw${canEvo || canBuy ? ' hot' : ''}" data-act="power"><b>相棒を強化する</b><small>${pw}</small></button><div class="pwsub" hidden><button class="go sub" data-act="evo" ${kids.length ? '' : 'disabled'}><b>進化</b><small>${kids.length ? (canEvo ? 'できる！' : `EXP ${(PRG.exp || 0).toLocaleString()}/${cost.toLocaleString()}`) : '最終形態'}</small></button><button class="go sub" data-act="shop"><b>ショップ</b><small>◎${(PRG.coins || 0).toLocaleString()}</small></button></div><button class="go sub ch" data-act="hub"><b>楽屋へ戻る</b></button>`)
+    + `</div>`;
 }
 const CLEAR_SCORE = 20000;
 
@@ -389,7 +399,7 @@ function dailyOver() {
   if (first) PRG.dailyBest = { day: d, sc, grid: res }; save();
   $('overEy').textContent = `今日の5韻${first ? '' : '（練習）'} ・ 🔥${PRG.streak.n}日連続`; $('overTitle').innerHTML = `<span class="dgrid">${res.map(GRID).join('')}</span><br>${hits}/5韻`;
   $('ovScore').textContent = sc.toLocaleString(); $('ovCombo').textContent = G.maxCombo; $('ovCombo').nextElementSibling.textContent = 'MAX COMBO'; $('ovGauge').textContent = `${PRG.streak.n}`; $('ovGauge').nextElementSibling.textContent = '連続日数';
-  $('ovMsg').innerHTML = (first ? `今日のボーナス EXP+${100 + 20 * hits} ・ ◎+${30 + 10 * hits}` : '練習モード：シェアされるのは今日1回目の結果') + '<br><small>🟩うまっ以上　🟨ナイス　🟧おしい　⬛ミス</small>'; $('ovMsg').insertAdjacentHTML('afterbegin', `<div class="pal"><b>${petName()}</b>「${hits >= 4 ? 'きょうの5韻、キレてたね！' : hits >= 2 ? 'あしたはもっといける！' : 'つぎは一緒にリベンジしよ！'}」</div>`); $('ovRanks').hidden = true; $('ovShare').hidden = false; $('overModal').classList.remove('endres'); $('overModal').hidden = false; G.dailyDone = true;
+  $('ovMsg').innerHTML = (first ? `今日のボーナス EXP+${100 + 20 * hits} ・ ◎+${30 + 10 * hits}` : '練習モード：シェアされるのは今日1回目の結果') + '<br><small>🟩うまっ以上　🟨ナイス　🟧おしい　⬛ミス</small>'; $('ovMsg').insertAdjacentHTML('afterbegin', `<div class="pal"><b>${petName()}</b>「${hits >= 4 ? 'きょうの5韻、キレてたね！' : hits >= 2 ? 'あしたはもっといける！' : 'つぎは一緒にリベンジしよ！'}」</div>`); $('ovRanks').hidden = true; $('ovShare').hidden = false; $('overModal').classList.remove('endres'); delete $('overModal').dataset.step; $('overModal').hidden = false; G.dailyDone = true;
   if (hits >= 4) { confetti(200, { y: 2.5, burst: 8 }); SFX.crowd(1.5); }
 }
 function dailyText() { const b = PRG.dailyBest || { grid: G.dres || [], sc: G.endScore || 0 }, dt = new Date(Date.now() + 9 * 3600e3), k = `${dt.getUTCMonth() + 1}/${dt.getUTCDate()}`;

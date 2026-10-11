@@ -1206,6 +1206,46 @@ body:has(#msModal:not([hidden])) .console { display: none !important; }
 .tut-dots { display: flex; justify-content: center; gap: 8px; } .tut-dots i { width: 8px; height: 8px; border-radius: 4px; background: rgba(255,255,255,.25); transition: width .25s, background .25s; } .tut-dots i.on { width: 24px; background: #D4FF3A; }
 .tut #tutNext { width: min(360px, 100%); justify-self: center; font-size: 22px; }
 body:has(#tut:not([hidden])) .console, body:has(#tut:not([hidden])) .cmd { display: none !important; }
+
+/* v57 result: step 1 = rank pyramid, step 2 = three choices */
+#overModal.endres[data-step="2"] .stats, #overModal.endres[data-step="2"] .rkb, #overModal.endres[data-step="2"] h2, #overModal.endres[data-step="2"] .eyebrow { display: none !important; }
+#overModal.endres[data-step="1"] .ov2, #overModal.endres[data-step="2"] .ov1 { display: none; }
+#overModal.endres .btns { display: none !important; }
+.pyr { display: grid; gap: 4px; justify-items: center; }
+.pyr > div { width: var(--wk); display: grid; grid-template-columns: 32px 1fr auto; align-items: center; gap: 6px; padding: 2px 10px 2px 3px; border-radius: 6px; background: rgba(255,255,255,.05); border: 1.5px solid rgba(255,255,255,.08); opacity: .4; transition: opacity .25s, background .25s, transform .25s; box-sizing: border-box; }
+.pyr > div i { font: 800 15px/24px var(--f-disp, sans-serif); font-style: normal; text-align: center; border-radius: 4px; background: var(--rc); color: #0E0B22; }
+.pyr > div b { font: 400 12px var(--f-jp); text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .pyr > div b u { text-decoration: none; font: 700 8px var(--f-mono); background: #D4FF3A; color: #0E0B22; padding: 1px 4px; border-radius: 3px; margin-left: 5px; vertical-align: middle; }
+.pyr > div em { font: 700 10px var(--f-mono); font-style: normal; opacity: .7; }
+.pyr > div.lit { opacity: 1; background: color-mix(in srgb, var(--rc) 22%, transparent); border-color: color-mix(in srgb, var(--rc) 55%, transparent); }
+.pyr > div.me { background: var(--rc); color: #0E0B22; border-color: #0E0B22; transform: scale(1.07); box-shadow: 0 0 0 2px #0E0B22, 0 0 22px var(--rc); animation: rkPulse .5s ease 2; z-index: 1; }
+.pyr > div.me i { background: #0E0B22; color: var(--rc); } .pyr > div.me em { opacity: 1; }
+#overModal .rnext { font: 700 11px var(--f-mono); text-align: center; color: #D4FF3A; margin-top: 6px; } #overModal .rnext b { font-size: 14px; }
+.ov1 { display: grid; grid-template-columns: 1fr auto; gap: 10px; } .ov1 .go { font-size: 22px; } .ov1 .xpost { font-size: 14px; padding: 12px 14px; white-space: nowrap; }
+.ov2 { display: grid; gap: 10px; }
+.ov2 .gain { display: flex; justify-content: center; gap: 10px; } .ov2 .gain span { display: grid; justify-items: center; padding: 8px 16px; border-radius: 10px; background: var(--ink-2); border: 1.5px solid var(--ink-3); animation: gainPop .6s cubic-bezier(.2,1.6,.4,1) both; } .ov2 .gain span + span { animation-delay: .12s; }
+.ov2 .gain i { font: 700 9px var(--f-mono); font-style: normal; letter-spacing: .14em; color: var(--mute); } .ov2 .gain b { font: 800 24px var(--f-mono); color: #9DF7FF; } .ov2 .gain span + span b { color: #FFC93D; }
+.ov2 .go.big1 { font-size: 24px; padding: 18px; }
+.ov2 .go.ch { display: grid; gap: 3px; text-align: center; padding: 12px; } .ov2 .go.ch b { font: 400 18px var(--f-jp); } .ov2 .go.ch small { font: 700 11px var(--f-body); opacity: .8; }
+.ov2 .go.pw { background: #7A2BFF; color: #fff; box-shadow: 5px 5px 0 #D4FF3A; } .ov2 .go.pw.hot { animation: rkPulse .9s ease infinite alternate; }
+.ov2 .go.hot:not(.pw) { animation: rkPulse .9s ease infinite alternate; }
+.pwsub { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; } .pwsub .go { display: grid; gap: 2px; padding: 10px 6px; } .pwsub .go b { font: 400 16px var(--f-jp); } .pwsub .go small { font: 700 10px var(--f-mono); opacity: .8; } .pwsub .go[disabled] { opacity: .4; }
+/* v57 coach (first-session onboarding) */
+.coach { position: absolute; inset: 0; z-index: 58; pointer-events: none; }
+.coach.dim { background: rgba(8,6,20,.62); pointer-events: auto; }
+.cb-spot { position: fixed; border-radius: 14px; box-shadow: 0 0 0 9999px rgba(8,6,20,.62); border: 3px solid #D4FF3A; transition: all .25s ease; animation: tutRing 1s ease-in-out infinite alternate; }
+.cb-bub { position: fixed; left: 50%; transform: translateX(-50%); width: min(340px, calc(100vw - 32px)); box-sizing: border-box; background: #fff; color: #0E0B22; border-radius: 16px; border: 3px solid #0E0B22; box-shadow: 6px 6px 0 #FF4D1A; padding: 12px 16px 14px; pointer-events: auto; animation: tutIn .3s ease; }
+.cb-bub[data-arrow="down"]::after, .cb-bub[data-arrow="up"]::after { content: ""; position: absolute; left: 50%; width: 16px; height: 16px; background: #fff; border: 3px solid #0E0B22; transform: translateX(-50%) rotate(45deg); }
+.cb-bub[data-arrow="down"]::after { bottom: -11px; border-top: 0; border-left: 0; } .cb-bub[data-arrow="up"]::after { top: -11px; border-bottom: 0; border-right: 0; }
+.cb-n { font: 700 10px var(--f-mono); letter-spacing: .12em; color: #7A2BFF; }
+.cb-t { margin: 4px 0 0; font: 400 18px/1.4 var(--f-jp); } .cb-t b { color: #FF4D1A; font-weight: 400; } .cb-t small { display: block; font: 700 11px var(--f-body); color: #555; margin-top: 4px; }
+.cb-btns { display: grid; gap: 8px; margin-top: 10px; } .cb-btns:has(> :not([hidden])) { display: grid; } .cb-go { font-size: 18px; }
+.cb-skip { appearance: none; border: 0; background: transparent; color: #666; font: 700 12px var(--f-body); text-decoration: underline; cursor: pointer; }
+.cb-btns:not(:has(> :not([hidden]))) { display: none; }
+.evbpm { margin: 4px 0 6px !important; font: 700 11px var(--f-mono) !important; display: flex; justify-content: center; gap: 10px; color: var(--mute); } .evbpm span { color: var(--bone); } .evbpm i { font-style: normal; color: #D4FF3A; }
+@keyframes hotGlow { from { box-shadow: 5px 5px 0 #D4FF3A, 0 0 0 0 rgba(212,255,58,.0); } to { box-shadow: 5px 5px 0 #D4FF3A, 0 0 0 6px rgba(212,255,58,.45); } }
+.ov2 .go.hot, .ov2 .go.pw.hot { animation: hotGlow .7s ease-in-out infinite alternate !important; }
+.ov2h { font: 800 italic 22px var(--f-disp, sans-serif); text-align: center; color: #D4FF3A; letter-spacing: .02em; }
+@keyframes gainPop { from { opacity: 0; transform: scale(.4) rotate(-6deg); } to { opacity: 1; transform: none; } }
 </style>
 
 <div id="app">
@@ -1435,6 +1475,8 @@ body:has(#tut:not([hidden])) .console, body:has(#tut:not([hidden])) .cmd { displ
         </div>
       </div>
 
+
+      <div class="coach" id="coach" hidden><div class="cb-spot" hidden></div><div class="cb-bub"><span class="cb-n"></span><p class="cb-t"></p><div class="cb-btns"><button class="go cb-go" hidden></button><button class="cb-skip" hidden></button></div></div></div>
       <div class="tut" id="tut" hidden data-s="0">
         <div class="tut-top"><span id="tutStep">1 / 5</span><button id="tutSkip">スキップ ▶▶</button></div>
         <div class="tut-stage" id="tutStage">

@@ -659,7 +659,7 @@ function battleOver() {
   if (lost && hard) G.bar = G.barShown = 0; // hard cups: the rival fully recovers
   $('overTitle').textContent = lost ? `LOSE… ${o.n} の勝ち` : 'バトル中断';
   $('overEy').textContent = `${ROUND_EN[RND()]} · ${ROUND[RND()]} REPORT`;
-  $('ovGauge').nextElementSibling.textContent = 'RIVAL HP'; $('ovCombo').nextElementSibling.textContent = 'MAX COMBO'; $('ovShare').hidden = true; $('ovRanks').hidden = true; $('overModal').classList.remove('endres');
+  $('ovGauge').nextElementSibling.textContent = 'RIVAL HP'; $('ovCombo').nextElementSibling.textContent = 'MAX COMBO'; $('ovShare').hidden = true; $('ovRanks').hidden = true; $('overModal').classList.remove('endres'); delete $('overModal').dataset.step;
   $('ovScore').textContent = G.bScore; $('ovCombo').textContent = G.maxCombo; $('ovGauge').textContent = Math.round((1 - G.bar) * 100) + '%';
   $('ovMsg').textContent = ''; if (0) $('ovMsg').textContent = lost ? (hard ? `${o.n} のHPは全回復した。${MODE().cup}は甘くない。` : `${o.n} のHPは ${Math.round((1 - G.bar) * 100)}% のまま。削ったぶんは残っている、もう一回！`) : `${o.n} のHP 残り ${Math.round((1 - G.bar) * 100)}%。`;
   save(); updateHud();
@@ -820,6 +820,7 @@ function toHub() {
   $('overModal').hidden = true; document.body.classList.remove('battle'); hideBubble(); $('order').classList.remove('on');
   G.state = 'idle'; G.peakOn = false; G.chatT = 3; updateHud(); camReset(); startDance();
   if (G.pendingEnd) { const pc = G.pendingEnd; G.pendingEnd = null; setTimeout(() => playEnding(pc, () => showClear(pc)), 400); return; }
+  if (G.onbPending) { G.onbPending = false; PRG.quick = false; save(); setTimeout(() => startOnb(), 600); return; }
   if (PRG.quick) { PRG.quick = false; save(); setTimeout(() => { $('nameBtn').click(); $('nameModal').querySelector('h2').textContent = '相棒に名前をつけよう'; }, 700); }
 }
 
@@ -1040,7 +1041,13 @@ $('endBtn').addEventListener('click', () => { if (G.state === 'idle') startBattl
 $('ovShare').addEventListener('click', () => { if (G.dailyDone) { const text = dailyText(); if (navigator.share) { navigator.share({ text }).catch(() => {}); return; } const l = document.createElement('a'); l.href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(text); l.target = '_blank'; l.rel = 'noopener'; document.body.appendChild(l); l.click(); l.remove(); return; } $('overModal').hidden = true; PH.from = 'over'; shareCard(G.endless ? { kind: 'endless' } : { kind: 'battle' }); });
 $('clShare').addEventListener('click', () => shareCard({ kind: 'champ', mode: showClear.pc ? showClear.pc.mode : G.mode }));
 $('toHub').addEventListener('click', toHub);
-$('ovMsg').addEventListener('click', e => { const c = e.target.closest('[data-go]'); if (!c || G.pendingEnd) return; const k = c.dataset.go; toHub(); setTimeout(() => { if (k === 'evo') openEvo(); else if (k === 'shop') openShop(); }, 400); });
+$('ovMsg').addEventListener('click', e => { const c = e.target.closest('[data-act]'); if (!c || c.disabled) return; const a = c.dataset.act, M = $('overModal'); SFX.ui();
+  if (a === 'next') { M.dataset.step = '2'; M.querySelector('.card').scrollTop = 0; return; }
+  if (a === 'share') return $('ovShare').click();
+  if (a === 'again') return $('again').click();
+  if (a === 'power') { const s = M.querySelector('.pwsub'); s.hidden = !s.hidden; return; }
+  if (a === 'hub') return $('toHub').click();
+  if (a === 'evo' || a === 'shop') { if (G.pendingEnd) return $('toHub').click(); toHub(); setTimeout(() => { a === 'evo' ? openEvo() : openShop(); }, 400); } });
 $('gName').addEventListener('click', () => { if (G.state === 'idle') $('nameBtn').click(); });
 $('nameBtn').addEventListener('click', () => { $('rename').value = cleanMC(G.name); $('nameModal').hidden = false; setTimeout(() => $('rename').focus(), 50); });
 $('renameNo').addEventListener('click', () => { $('nameModal').hidden = true; });
@@ -1090,6 +1097,7 @@ function openEvo() {
   $('evoList').innerHTML = kids.map(k => { const seen = discovered.has(k.id), b = baseStats(k), cur = baseStats(sp);
     return `<div class="evk"><img src="${th[k.id] || ''}" class="${seen ? '' : 'sil'}" alt=""><b>${seen ? k.name : '？？？'}</b><small>${STAGE_NAME[k.stage]}${TYPE_OF(k) ? ' · ' + TYPE_OF(k) : ''}</small>
       <ul>${STAT_KEYS.map(([kk, ja]) => `<li data-k="${kk}"><span>${ja} ⓘ</span><em>${cur[kk]}→<i>${b[kk]}</i></em></li>`).join('')}</ul>
+      <p class="evbpm">BPM <span>${EVO_BPM[Math.min(3, sp.stage)]}→<i>${EVO_BPM[Math.min(3, k.stage)]}</i></span> 得点 <span>×${STAGE_MULT[Math.min(3, sp.stage)]}→<i>×${STAGE_MULT[Math.min(3, k.stage)]}</i></span></p>
       <button class="go" data-evo="${k.id}" ${can ? '' : 'disabled'}>EXP ${cost.toLocaleString()} で進化</button></div>`; }).join('');
   $('evoDesc').hidden = true; $('evoHave').textContent = `EXP ${(PRG.exp || 0).toLocaleString()} ／ ${cost.toLocaleString()}（エンドレスのスコアでたまる）`; $('evoModal').hidden = false; SFX.ui();
 }

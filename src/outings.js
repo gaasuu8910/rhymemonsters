@@ -470,3 +470,56 @@ function openMissions() { const M = missionsToday(); $('msList').innerHTML = M.k
 $('missionBtn').addEventListener('click', () => { if (G.state === 'idle') openMissions(); });
 $('msClose').addEventListener('click', () => { $('msModal').hidden = true; });
 updateMissionChip();
+
+/* ---------- first-session onboarding: name → evolve → shop → MY RHYME → the real game ---------- */
+const ONB = { step: -1, t: null, n0: 0, sub: '' }; window.__onb = ONB;
+function coach(target, text, opt = {}) {
+  const C = $('coach'); C.hidden = false; C.querySelector('.cb-t').innerHTML = text; C.querySelector('.cb-n').textContent = petName();
+  C.querySelector('.cb-go').hidden = !opt.go; if (opt.go) C.querySelector('.cb-go').textContent = opt.go;
+  C.querySelector('.cb-skip').hidden = !opt.skip; if (opt.skip) C.querySelector('.cb-skip').textContent = opt.skip;
+  ONB.target = target; coachPlace();
+}
+function coachPlace() {
+  const C = $('coach'), sp = C.querySelector('.cb-spot'), bub = C.querySelector('.cb-bub'), el = typeof ONB.target === 'string' ? document.querySelector(ONB.target) : ONB.target;
+  const R = el && el.getBoundingClientRect(), H = innerHeight;
+  if (!R || !R.width) { sp.hidden = true; bub.style.top = '38%'; bub.style.bottom = 'auto'; C.classList.add('dim'); return; }
+  C.classList.remove('dim'); sp.hidden = false; const pad = 8;
+  Object.assign(sp.style, { left: R.left - pad + 'px', top: R.top - pad + 'px', width: R.width + pad * 2 + 'px', height: R.height + pad * 2 + 'px' });
+  if (R.top > H * .5) { bub.style.top = 'auto'; bub.style.bottom = (H - R.top + 22) + 'px'; bub.dataset.arrow = 'down'; } else { bub.style.bottom = 'auto'; bub.style.top = (R.bottom + 22) + 'px'; bub.dataset.arrow = 'up'; }
+}
+function coachHide() { $('coach').hidden = true; ONB.target = null; }
+function startOnb() { ONB.step = 0; ONB.sub = ''; clearInterval(ONB.t); ONB.t = setInterval(onbTick, 250); onbEnter(0); }
+function onbEnd(play) { clearInterval(ONB.t); ONB.step = -1; coachHide(); PRG.onbDone = true; save(); if (play) setTimeout(() => $('endBtn').click(), 300); }
+function onbEnter(s) {
+  ONB.step = s; ONB.sub = '';
+  if (s === 0) { coachHide(); $('nameBtn').click(); $('nameModal').querySelector('h2').textContent = 'まずは君のMCネームを決めよう'; }
+  if (s === 1) { const kids = G.sp.kids || []; if (!kids.length) return onbEnter(2); const cost = EVO_COST[BY[kids[0]].stage]; if ((PRG.exp || 0) < cost) { const add = cost - (PRG.exp || 0); addExp(add); banner(`<small>はじめてボーナス</small><b>EXP +${add}</b>`, 1800); } updateHud(); coach('#evoBtn', '<b>EXP</b>がたまった！<br>ぼくを<b>進化</b>させて！'); }
+  if (s === 2) { const nb = nextBuy(); if (nb && (PRG.coins || 0) < Math.max(100, nb.p)) { const add = Math.max(100, nb.p) - (PRG.coins || 0); addCoins(add, true); banner(`<small>はじめてボーナス</small><b>◎ +${add}</b>`, 1800); } updateHud(); ONB.n0 = PRG.owned.length; coach('#outBtn', '<b>コイン</b>でギアを買うと<br>ステータスが上がるよ！'); }
+  if (s === 3) coach('#dailyBtn', '最後に<b>今日の一本</b>！<br>自分の韻を考えてXで発表しよう', { skip: 'あとでやる ▶' });
+  if (s === 4) coach(null, '準備OK！<br>ここからが<b>本編</b>だ！<br><small>RANK A でクリア</small>', { go: 'エンドレスMCバトルへ ▶', skip: '楽屋を見てまわる' });
+}
+function onbTick() {
+  const s = ONB.step; if (s < 0) return; if (!$('coach').hidden) coachPlace();
+  const open = id => !$(id).hidden;
+  if (s === 0) { if (!open('nameModal')) onbEnter(1); return; }
+  if (s === 1) {
+    if (G.state === 'evolve') { if (ONB.sub !== 'evo') { ONB.sub = 'evo'; coachHide(); } return; }
+    if (ONB.sub === 'evo') { if (G.state === 'idle' && !document.querySelector('.modal:not([hidden])')) { ONB.sub = 'wait'; setTimeout(() => onbEnter(2), 1200); } return; }
+    if (ONB.sub === 'wait') return;
+    if (open('evoModal')) { if (ONB.sub !== 'modal') { ONB.sub = 'modal'; coach('#evoList [data-evo]:not([disabled])', '進化先をえらんで<b>進化</b>！<br><small>スタートBPMが上がるかわりに、得点も大きくなる</small>'); } }
+    else if (ONB.sub === 'modal') { ONB.sub = ''; coach('#evoBtn', '<b>EXP</b>がたまった！<br>ぼくを<b>進化</b>させて！'); }
+    return;
+  }
+  if (s === 2) {
+    if (open('shop')) { if (PRG.owned.length > ONB.n0) { if (ONB.sub !== 'bought') { ONB.sub = 'bought'; coach('#shopBack', 'いいね、似合ってる！<br>もどろう'); } } else if (ONB.sub !== 'shop') { ONB.sub = 'shop'; coach('#shopGrid', 'ギアをえらんで<b>買う</b>！<br><small>試着は無料</small>'); } return; }
+    if (ONB.sub === 'shop' || ONB.sub === 'bought') { ONB.sub = 'wait'; setTimeout(() => onbEnter(3), 600); }
+    return;
+  }
+  if (s === 3) {
+    if (open('dailyModal') || open('photoResult')) { if (ONB.sub !== 'my') { ONB.sub = 'my'; coachHide(); } return; }
+    if (ONB.sub === 'my') { ONB.sub = 'wait'; setTimeout(() => onbEnter(4), 500); }
+    return;
+  }
+}
+$('coach').querySelector('.cb-skip').addEventListener('click', () => { if (ONB.step === 3) onbEnter(4); else if (ONB.step === 4) onbEnd(false); else onbEnd(false); });
+$('coach').querySelector('.cb-go').addEventListener('click', () => onbEnd(true));

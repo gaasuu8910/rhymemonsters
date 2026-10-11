@@ -57,7 +57,11 @@ function rhymeCore(prompt, reading) {
   // the same sounds copied from the end (かんせん / かんせん, くら / くら) is half a rhyme at best — the AI can't rescue it past 4
   { let t = 0; while (t < k && P[P.length - 1 - op - t] === A[A.length - 1 - oa - t]) t++; if (t >= 2 && R > 3) { R = 3; note = `母音${k}つ一致・後ろ${t}音が丸かぶり（頭以外の子音も変えよう）`; } }
   if (ratio >= 1 && R === 4 && !note.includes('丸かぶり') && !note.includes('省略')) note = `母音${k}つ一致・同じ音がかぶり気味（子音を変えるともっと硬い）`;
-  return { ...out, k, diff, R, note };
+  // one vowel off with the same length (だんじょん / さんじょう): not a hit, but close enough to dodge the damage
+  let near = false;
+  if (R === 0 && !(k >= 2 && diff === 0)) for (const dp of [0, tp]) for (const da of [0, ta]) { const n1 = ps.length - dp, n2 = as.length - da; if (n1 !== n2 || n1 < 3) continue; let mm = 0; for (let i = 0; i < n1; i++) if (!vEq(ps[i], as[i])) mm++; if (mm === 1) near = true; }
+  if (near) note = '母音が1つだけズレ（おしい！）';
+  return { ...out, k, diff, R, note, near };
 }
 // final grade: rhyme hardness (R + ear) × artistry (link + play + punch), MC-battle style
 function combine(core, ai) {
