@@ -27,8 +27,9 @@ const ENDLESS_BPM = 120, ENDLESS_MAX = 210, S0k = () => ST().k;
 const EVO_BPM = [120, 132, 144, 156], STAGE_MULT = [1, 1.3, 1.7, 2.2];
 // the staircase: every 3 rhymes one step — longer words, then a faster beat, then longer words again…
 // once the beat passes MAX_ZONE_BPM the short words are gone for good
-const STEP_HITS = 3, STEP_BPM = 15, MAX_ZONE_BPM = 180;
-function stair(h) { const s = Math.floor((h || 0) / STEP_HITS), lenS = s, tmpS = Math.floor(s / 2), bpm = Math.min(ENDLESS_MAX, startBpm() + STEP_BPM * tmpS), max = bpm >= MAX_ZONE_BPM; return { s, bpm, max, len: max ? ENDLESS_LEN.length - 1 : Math.min(ENDLESS_LEN.length - 2, lenS) }; }
+// every 2 rhymes one step; the beat dwells around 150 where the game is at its best, then climbs to the top zone
+const STEP_HITS = 2, MAX_ZONE_BPM = 180, BPM_STEPS = [120, 120, 135, 135, 150, 150, 150, 150, 165, 165, 180];
+function stair(h) { const s = Math.floor((h || 0) / STEP_HITS), base = s < BPM_STEPS.length ? BPM_STEPS[s] : 180 + 5 * (s - BPM_STEPS.length + 1), bpm = Math.min(ENDLESS_MAX, base + (startBpm() - ENDLESS_BPM)), max = bpm >= MAX_ZONE_BPM; return { s, bpm, max, len: max ? ENDLESS_LEN.length - 1 : Math.min(ENDLESS_LEN.length - 2, s) }; }
 const stageIx = () => G.daily ? 0 : Math.max(0, Math.min(3, (G.sp && G.sp.stage) || 0)), startBpm = () => EVO_BPM[stageIx()], stageMult = () => STAGE_MULT[stageIx()];
 function guardFx() { try { ring('#56D9F5', { big: 8 }); ring('#FFFFFF', { y: .6, big: 6 }); flash(.5, .5); SFX.gong(); FX.glint.emit({ x: 0, y: 1.4 * rigScale, z: 0, n: 120, color: ['#56D9F5', '#FFFFFF'], speed: [3, 7], size: [.3, .7] }); document.body.classList.add('guardhit'); setTimeout(() => document.body.classList.remove('guardhit'), 900); } catch (e) {} }
 const guardEvery = d => Math.max(3, 9 - Math.round(d / 15)); // consecutive hits that charge one guard
@@ -38,8 +39,8 @@ function startVerse(step, t) {
   const ease = !!G.ease; G.ease = false; // right after a miss: a slightly slower bar and an easier prompt
   if (G.endless && !G.daily) G.eBpm = stair(G.hits).bpm;
   const boost = G.boost || 0, flow = 1 - ST().k / 100 * .14, bpm = G.endless ? Math.round(G.eBpm || ENDLESS_BPM) : Math.round((Math.min(196, Seq.track.bpm * 1.15 + 10) + boost) * flow); // every hit pushes the tempo up a notch; endless: same slow start for everyone, climbing every verse
-  if (G.endless) { const prev = G.prevBpm || ENDLESS_BPM, dl = Math.max(0, (t - AT()) * 1000); if (bpm < prev) { setTimeout(() => banner(`<b>TEMPO DOWN ▼${bpm}</b>`, 1100), dl); G.upFrom = bpm; } else if (bpm >= (G.upFrom || ENDLESS_BPM) + 10) { G.upFrom = bpm; setTimeout(() => { banner(`<b>TEMPO UP! ▲${bpm}</b>`, 1200); skyU.uKick.value = 1.4; Cam.punch = Math.max(Cam.punch, .05); }, dl); } G.prevBpm = bpm; }
-  else if (!ease && boost > (G.boostShown || 0)) setTimeout(() => { banner(`<b>TEMPO UP! ▲${bpm}</b>`, 1200); skyU.uKick.value = 1.4; Cam.punch = Math.max(Cam.punch, .05); }, Math.max(0, (t - AT()) * 1000));
+  if (G.endless) { const prev = G.prevBpm || ENDLESS_BPM, dl = Math.max(0, (t - AT()) * 1000); if (bpm < prev) { setTimeout(() => banner(`<b>TEMPO DOWN ▼${bpm}</b>`, 1100), dl); G.upFrom = bpm; } else if (bpm >= (G.upFrom || ENDLESS_BPM) + 10) { G.upFrom = bpm; setTimeout(() => { banner(`<b>テンポアップ！</b><small>BPM ${bpm}</small>`, 1500); skyU.uKick.value = 1.4; Cam.punch = Math.max(Cam.punch, .05); }, dl); } G.prevBpm = bpm; }
+  else if (!ease && boost > (G.boostShown || 0)) setTimeout(() => { banner(`<b>テンポアップ！</b><small>BPM ${bpm}</small>`, 1500); skyU.uKick.value = 1.4; Cam.punch = Math.max(Cam.punch, .05); }, Math.max(0, (t - AT()) * 1000));
   G.boostShown = boost;
   if (false) setTimeout(() => banner(`<b>TEMPO DOWN ▼${bpm}</b>`, 1200), Math.max(0, (t - AT()) * 1000));
   Seq.battleBpm = bpm;
@@ -72,9 +73,9 @@ function startVerse(step, t) {
   const hint = hv.map(v => `<span class="m ghost"><em>${v}</em>${v}</span>`).join('');
   $('kl2').innerHTML = b.spans.map(sp => span(sp)).join('') + `<span class="slot" id="slot">${hint}</span>`;
   V.q = QBY[V.word] || null; $('jc').hidden = true; const noHint = !!MODE().noHint;
-  const hLv = G.endless ? Math.min(G.combo >= 12 ? 3 : G.combo >= 8 ? 2 : G.combo >= 4 ? 1 : 0, (G.hits || 0) >= 22 ? 3 : (G.hits || 0) >= 15 ? 2 : (G.hits || 0) >= 9 ? 1 : 0) : 0, hOff = noHint || hLv >= 3;
-  if (G.endless && hLv !== (G.hintLv || 0)) { const msg = ['HINT BACK', 'HINT DELAY ▲', 'HINT DELAY ▲▲', 'NO HINT ZONE!!'][hLv]; setTimeout(() => banner(`<b>${msg}</b>`, 1400), Math.max(0, (t - AT()) * 1000) + 300); } G.hintLv = hLv;
-  if (G.endless && !G.daily) { const st = stair(G.hits), wl = st.len, dl = Math.max(0, (t - AT()) * 1000); if (st.max && !G.maxZone) { G.maxZone = true; setTimeout(() => { banner(`<small>${st.bpm} BPM OVER</small><b>MAX ZONE!!</b><small>ここからは長い単語だけ</small>`, 2200); flash(.5); SFX.crowd(1.4); ring('rainbow', { big: 7 }); }, dl + 1500); } else if (wl > (G.wordLv || 0)) setTimeout(() => { banner(`<b>WORD LV ${wl + 1} ▲</b><small>${ENDLESS_LEN[wl][0]}文字〜</small>`, 1400); flash(.3); }, dl + 1500); G.wordLv = wl; }
+  const hLv = G.endless ? Math.min(G.combo >= 12 ? 3 : G.combo >= 8 ? 2 : G.combo >= 4 ? 1 : 0, (G.hits || 0) >= 16 ? 3 : (G.hits || 0) >= 11 ? 2 : (G.hits || 0) >= 6 ? 1 : 0) : 0, hOff = noHint || hLv >= 3;
+  if (G.endless && hLv !== (G.hintLv || 0)) { const msg = [['ヒント復活', 'ヒントがすぐ出るようになりました'], ['難易度アップ！', 'ヒントが出るのが遅くなります'], ['難易度アップ！', 'ヒントがさらに遅くなります'], ['難易度アップ！', 'ここからヒントなし！']][hLv]; setTimeout(() => banner(`<b>${msg[0]}</b><small>${msg[1]}</small>`, 1900), Math.max(0, (t - AT()) * 1000) + 300); } G.hintLv = hLv;
+  if (G.endless && !G.daily) { const st = stair(G.hits), wl = st.len, dl = Math.max(0, (t - AT()) * 1000); if (st.max && !G.maxZone) { G.maxZone = true; setTimeout(() => { banner(`<b>最速ゾーン！</b><small>${st.bpm} BPM ・ ここからは長い単語だけ</small>`, 2200); flash(.5); SFX.crowd(1.4); ring('rainbow', { big: 7 }); }, dl + 1500); } else if (wl > (G.wordLv || 0)) setTimeout(() => { banner(`<b>難易度アップ！</b><small>お題の単語が長くなります（${ENDLESS_LEN[wl][0]}文字〜）</small>`, 1900); flash(.3); }, dl + 1500); G.wordLv = wl; }
   V.hintSeen = false; $('khint').innerHTML = V.q && !hOff ? `<b>HINT</b><span>${V.q.h}</span><i>${moras(V.q.a).length}文字</i>` : ''; $('khint').hidden = !V.q || hOff; if (V.q && !hOff && hLv) { $('khint').hidden = true; const vn = V.n; setTimeout(() => { if (V.n === vn && V.phase === 'input' && !V.sent) $('khint').hidden = false; }, Math.max(0, (t - AT()) * 1000) + [0, .4, .7][hLv] * (V.dead - step) * V.sx * 1000); } $('khint').classList.remove('ans');
   { const q = V.q, esc = s => String(s || '').replace(/[<>&]/g, ''); // who raps which line + written-Japanese captions over the karaoke kana
     $('kl1').insertAdjacentHTML('afterbegin', `<span class="kt"><b class="who opp">${esc(opp.n)}</b>${V.lt ? `${esc(V.lt)}${esc(q ? q.d : V.word)}` : ''}</span>`);
