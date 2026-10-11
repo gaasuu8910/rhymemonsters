@@ -1054,7 +1054,7 @@ $('ovMsg').addEventListener('click', e => { const c = e.target.closest('[data-ac
 $('gName').addEventListener('click', () => { if (G.state === 'idle') $('nameBtn').click(); });
 $('nameBtn').addEventListener('click', () => { $('rename').value = cleanMC(G.name); $('nameModal').hidden = false; setTimeout(() => $('rename').focus(), 50); });
 $('renameNo').addEventListener('click', () => { $('nameModal').hidden = true; });
-function applyName(v) { G.name = cleanMC(v); save(); updateHud(); }
+function applyName(v) { G.name = cleanMC(v); PRG.named = true; save(); updateHud(); }
 $('renameOk').addEventListener('click', () => { $('nameModal').querySelector('h2').textContent = 'MCネームを変える'; applyName($('rename').value); $('nameModal').hidden = true; react('blush'); FX.heart.emit({ x: 0, y: 1.6 * rigScale, z: 0, n: 30, speed: [2, 3.5], up: .6, color: ['#FF3D7F', '#FF8FB1'], grav: -.3, size: [.3, .55] }); SFX.milestone(); bubble(`${petName()}…！ いい名前！`, petName(), true); G.chatT = 3; say(petName()); });
 $('rename').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.isComposing && e.keyCode !== 229) $('renameOk').click(); });
 $('snd').addEventListener('click', () => { const m = !A.muted; setMuted(m); $('snd').setAttribute('aria-pressed', !m); $('snd').querySelector('b').innerHTML = m ? '<em>音</em> OFF' : '<em>音</em> ON'; if (m) try { speechSynthesis.cancel(); } catch (e) {} });

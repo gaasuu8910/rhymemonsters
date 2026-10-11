@@ -445,7 +445,8 @@ function shareCard(o, preview) {
 function renderCardOpts() {
   const el = $('prOpts'); if (!el) return; const OP = PH.opt, PL = PUNCH[G.sp.id] || PUNCH[0] || [];
   const row = (k, lab, items) => `<div class="pro"><small>${lab}</small><div class="chips-x">${items.map((t, i) => `<button class="${OP[k] === i ? 'on' : ''}" data-k="${k}" data-i="${i}">${t}</button>`).join('')}</div></div>`;
-  el.innerHTML = row('th', 'カラー', CARD_THEMES.map(t => `<i style="background:linear-gradient(135deg,${t[1]},${t[2]});border-color:${t[3]}"></i>${t[0]}`)) + row('ang', 'アングル', CARD_ANG.map(a => a[0])) + (PL.length > 1 ? row('line', 'セリフ', PL.map(l => l.length > 9 ? l.slice(0, 9) + '…' : l)) : '');
+  const nm = (G.name || '').replace(/^MC/, '');
+  el.innerHTML = `<div class="pro"><small>名前</small><div class="prnw"><b>MC</b><input class="prn" id="prName" maxlength="8" value="${nm.replace(/["<>&]/g, '')}" aria-label="MCネーム"></div></div>` + row('th', 'カラー', CARD_THEMES.map(t => `<i style="background:linear-gradient(135deg,${t[1]},${t[2]});border-color:${t[3]}"></i>${t[0]}`)) + row('ang', 'アングル', CARD_ANG.map(a => a[0])) + (PL.length > 1 ? row('line', 'セリフ', PL.map(l => l.length > 9 ? l.slice(0, 9) + '…' : l)) : '');
 }
 
 /* ---------- MY RHYME: write your own A × B, your partner performs it on stage, post it ---------- */
@@ -509,7 +510,7 @@ function startOnb() { ONB.step = 0; ONB.sub = ''; clearInterval(ONB.t); ONB.t = 
 function onbEnd(play) { clearInterval(ONB.t); ONB.step = -1; coachHide(); PRG.onbDone = true; save(); if (play) setTimeout(() => $('endBtn').click(), 300); }
 function onbEnter(s) {
   ONB.step = s; ONB.sub = '';
-  if (s === 0) { coachHide(); $('nameBtn').click(); $('nameModal').querySelector('h2').textContent = 'まずは君のMCネームを決めよう'; }
+  if (s === 0) { if (PRG.named) return onbEnter(1); coachHide(); $('nameBtn').click(); $('nameModal').querySelector('h2').textContent = 'まずは君のMCネームを決めよう'; }
   if (s === 1) { const kids = G.sp.kids || []; if (!kids.length) return onbEnter(2); const cost = EVO_COST[BY[kids[0]].stage]; if ((PRG.exp || 0) < cost) { const add = cost - (PRG.exp || 0); addExp(add); banner(`<small>はじめてボーナス</small><b>EXP +${add}</b>`, 1800); } updateHud(); coach('#evoBtn', '<b>EXP</b>がたまった！<br>ぼくを<b>進化</b>させて！'); }
   if (s === 2) { const nb = nextBuy(); if (nb && (PRG.coins || 0) < Math.max(100, nb.p)) { const add = Math.max(100, nb.p) - (PRG.coins || 0); addCoins(add, true); banner(`<small>はじめてボーナス</small><b>◎ +${add}</b>`, 1800); } updateHud(); ONB.n0 = PRG.owned.length; ONB.nb = null; coach('#outBtn', '<b>コイン</b>でギアを買うと<br>ステータスが上がるよ！'); }
   if (s === 3) coach('#dailyBtn', '最後に<b>今日の一本</b>！<br>自分の韻を考えてXで発表しよう', { skip: 'あとでやる ▶' });
@@ -523,7 +524,7 @@ function onbTick() {
     if (G.state === 'evolve') { if (ONB.sub !== 'evo') { ONB.sub = 'evo'; coachHide(); } return; }
     if (ONB.sub === 'evo') { if (G.state === 'idle' && !document.querySelector('.modal:not([hidden])')) { ONB.sub = 'wait'; setTimeout(() => onbEnter(2), 1200); } return; }
     if (ONB.sub === 'wait') return;
-    if (open('evoModal')) { if (ONB.sub !== 'modal') { ONB.sub = 'modal'; coach('#evoList [data-evo]:not([disabled])', '進化先をえらんで<b>進化</b>！<br><small>スタートBPMが上がるかわりに、得点も大きくなる</small>'); } }
+    if (open('evoModal')) { if (ONB.sub !== 'modal') { ONB.sub = 'modal'; coach('#evoList', '好きな<b>進化先</b>をえらんで進化！<br><small>どちらでもOK。スタートBPMが上がるかわりに得点も大きくなる</small>'); } }
     else if (ONB.sub === 'modal') { ONB.sub = ''; coach('#evoBtn', '<b>EXP</b>がたまった！<br>ぼくを<b>進化</b>させて！'); }
     return;
   }
@@ -552,3 +553,20 @@ $('coach').querySelector('.cb-skip').addEventListener('click', () => { if (ONB.s
 $('coach').querySelector('.cb-go').addEventListener('click', () => onbEnd(true));
 
 $('prOpts').addEventListener('click', e => { const b = e.target.closest('button[data-k]'); if (!b || !PH.lastO) return; PH.opt[b.dataset.k] = +b.dataset.i; SFX.ui(); shareCard(PH.lastO); });
+
+// the name is chosen right where it shows: on the card you are about to post
+document.addEventListener('change', e => { if (e.target && e.target.id === 'prName') { applyName(e.target.value || 'ルーキー'); if (PH.lastO) shareCard(PH.lastO); } });
+document.addEventListener('keydown', e => { if (e.target && e.target.id === 'prName' && e.key === 'Enter' && !e.isComposing && e.keyCode !== 229) e.target.blur(); });
+
+/* ---------- save code: the whole save as a copy-paste code, to move to another device ---------- */
+const b64u = u8 => { let s = ''; for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); };
+const ub64u = s => { s = s.replace(/-/g, '+').replace(/_/g, '/'); while (s.length % 4) s += '='; const b = atob(s), u = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return u; };
+async function pipe(u8, T) { const st = new Blob([u8]).stream().pipeThrough(new T('deflate-raw')); return new Uint8Array(await new Response(st).arrayBuffer()); }
+async function makeSaveCode() { save(); const json = JSON.stringify({ s: PRG, f: [...discovered] }), u8 = new TextEncoder().encode(json);
+  if (typeof CompressionStream === 'function') { try { return 'RM1-' + b64u(await pipe(u8, CompressionStream)); } catch (e) {} } return 'RM0-' + b64u(u8); }
+async function readSaveCode(code) { code = (code || '').replace(/\s+/g, ''); const m = code.match(/^RM([01])-([A-Za-z0-9_-]+)$/); if (!m) throw new Error('form');
+  let u8 = ub64u(m[2]); if (m[1] === '1') u8 = await pipe(u8, DecompressionStream); const o = JSON.parse(new TextDecoder().decode(u8)); if (!o || !o.s || !o.s.runs) throw new Error('data'); return o; }
+$('setCode').addEventListener('click', async () => { $('settings').hidden = true; $('codeMsg').textContent = ''; $('codeIn').value = ''; $('codeOut').value = '作成中…'; $('codeModal').hidden = false; SFX.ui(); try { $('codeOut').value = await makeSaveCode(); } catch (e) { $('codeOut').value = 'コードを作れませんでした'; } });
+$('codeCopy').addEventListener('click', async () => { const v = $('codeOut').value; try { await navigator.clipboard.writeText(v); $('codeCopy').textContent = 'コピーしました！'; } catch (e) { $('codeOut').select(); document.execCommand && document.execCommand('copy'); $('codeCopy').textContent = 'コピーしました！'; } setTimeout(() => { $('codeCopy').textContent = 'コードをコピー'; }, 1600); });
+$('codeLoad').addEventListener('click', async () => { try { const o = await readSaveCode($('codeIn').value); store.set('intama4.save', o.s); store.set('intama4.found', o.f || [100]); $('codeMsg').textContent = '読み込みました。再開します…'; setTimeout(() => location.reload(), 600); } catch (e) { $('codeMsg').textContent = 'コードが正しくありません。コピーしたコードをそのまま貼りつけてください。'; } });
+$('codeClose').addEventListener('click', () => { $('codeModal').hidden = true; });
