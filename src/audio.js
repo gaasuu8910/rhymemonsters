@@ -75,9 +75,9 @@ const REESE_CURVE = (() => { const c = new Float32Array(1024); for (let i = 0; i
 const PROG = [[57, 60, 64], [53, 57, 60], [48, 52, 55], [55, 59, 62]];
 const ROOT = [45, 41, 48, 43];
 const PENTA = [69, 72, 74, 76, 79, 81, 84];
-const Seq = { mode: 'hub', bpm: 92, target: 92, battleBpm: 160, step: 0, next: 0, mstep: 0, mstart: 0, after: 'hub', level: 0, events: [], onDone: null };
+const Seq = { quiet: true, mode: 'hub', bpm: 92, target: 92, battleBpm: 160, step: 0, next: 0, mstep: 0, mstart: 0, after: 'hub', level: 0, events: [], onDone: null };
 function seqMode(m, opts = {}) {
-  Seq.mode = m; Seq.mstep = Seq.inStep ? -1 : 0; Seq.mstart = (Seq.next || AT()) + (Seq.inStep ? sixteenth() : 0);
+  Seq.quiet = false; Seq.mode = m; Seq.mstep = Seq.inStep ? -1 : 0; Seq.mstart = (Seq.next || AT()) + (Seq.inStep ? sixteenth() : 0);
   if (opts.bpm) { Seq.bpm = Seq.target = opts.bpm; }
   if (opts.after) Seq.after = opts.after;
   Seq.onDone = opts.onDone || null; Seq.dropLen = opts.len || 64;
@@ -96,7 +96,7 @@ function seqTick() {
 function ev(t, k, v) { Seq.events.push({ t, k, v }); }
 function playStep(t) {
   const ta = toAC(t);
-  const on = !!A.ac, st = Seq.step % 16, bar = Math.floor(Seq.step / 16), ch = PROG[bar % 4], rt = ROOT[bar % 4], m = Seq.mode, ms = Seq.mstep;
+  const on = !!A.ac && !Seq.quiet, st = Seq.step % 16, bar = Math.floor(Seq.step / 16), ch = PROG[bar % 4], rt = ROOT[bar % 4], m = Seq.mode, ms = Seq.mstep;
   const kick = (p = 1) => { if (on) S.kick(ta, p); ev(t, 'kick', p); };
   if (st === 0) ev(t, 'bar', bar);
   const sw = st % 2 ? sixteenth() * .2 : 0; // swing for the boom-bap

@@ -288,7 +288,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--flare); out
 .op-main { position: absolute; left: clamp(20px, 5vw, 72px); bottom: clamp(28px, 9vh, 96px); max-width: min(980px, calc(100% - 40px)); display: grid; gap: 18px; }
 .op-eyebrow { font: 600 11px var(--f-mono); letter-spacing: .24em; color: var(--flare); display: flex; align-items: center; gap: 12px; }
 .op-eyebrow i { width: 40px; height: 2px; background: currentColor; }
-.op-title { margin: 0; display: grid; white-space: nowrap; font: 800 clamp(54px, 10.6vw, 178px)/.8 var(--f-disp); letter-spacing: -.055em; text-transform: uppercase; }
+.op-title { margin: 0; display: grid; white-space: nowrap; font: 800 clamp(46px, min(10.6vw, 15vh), 178px)/.8 var(--f-disp); letter-spacing: -.055em; text-transform: uppercase; }
 .op-title .w1 { color: var(--bone); }
 .op-title .w2 { color: transparent; -webkit-text-stroke: 2px var(--bone); margin-left: .06em; }
 .op-title .ch { display: inline-block; transform-origin: 50% 100%; animation: chin .7s cubic-bezier(.2,1.4,.3,1) both; animation-delay: calc(var(--i) * 45ms + .15s); }
@@ -1075,7 +1075,8 @@ body.endless .end-row .end-score { display: block; } .end-lives { font: 900 24px
 .end-bpm { display: flex; align-items: baseline; gap: 4px; } .end-bpm b { font: 800 italic 30px/1 var(--f-disp); color: #fff; text-shadow: 3px 3px 0 #7A2BFF; } .end-bpm small { font: 700 10px var(--f-mono); color: #D4FF3A; letter-spacing: .14em; }
 body.endless .hpbars, body.endless .skill, body.endless .gauge-pop, body.endless #gaugePop { display: none !important; }
 .op-acts { display: flex; gap: 12px; align-items: stretch; flex-wrap: wrap; justify-self: start; }
-.op-hub { appearance: none; cursor: pointer; background: rgba(14,11,34,.75); color: var(--bone); border: 2px solid var(--bone); padding: 12px 18px; font: 400 15px var(--f-jp); box-shadow: 6px 6px 0 #7A2BFF; }
+.op-hub { appearance: none; cursor: pointer; background: rgba(14,11,34,.75); color: var(--bone); border: 2px solid var(--bone); padding: 14px 24px 12px; font: 400 15px var(--f-jp); box-shadow: 6px 6px 0 #7A2BFF; }
+.op-start b, .op-hub b { font-family: var(--f-body) !important; font-weight: 900 !important; letter-spacing: .02em !important; } .op-hub b { font-size: clamp(18px, 2vw, 26px); line-height: 1; }
 @media (max-width: 640px) { .op-acts { justify-self: stretch; } .op-acts .op-start { flex: 1 1 100%; } .op-hub { flex: 1 1 100%; } }
 .daily-chip { appearance: none; cursor: pointer; justify-self: end; display: inline-flex; align-items: center; gap: 8px; background: #0E0B22; color: var(--bone); border: 2px solid #D4FF3A; border-radius: 999px; padding: 5px 14px 5px 6px; box-shadow: 3px 3px 0 #FF4D1A; }
 .daily-chip i { font: 800 9px var(--f-mono); font-style: normal; letter-spacing: .12em; background: #D4FF3A; color: #0E0B22; padding: 3px 7px; border-radius: 999px; }
@@ -1281,7 +1282,7 @@ body:has(#tut:not([hidden])) .console, body:has(#tut:not([hidden])) .cmd { displ
 
 /* v64 logo: monster-mic emblem + stacked wordmark */
 .logo { align-items: center !important; } .logo .lg-emb { display: inline-block !important; width: 30px; height: 32px; flex: none; } .logo .lg-emb svg { width: 100%; height: 100%; display: block; }
-.op-emb { width: clamp(150px, 34vw, 300px); margin: 0 0 -14px; transform-origin: 50% 90%; animation: embIn .7s cubic-bezier(.2,1.6,.4,1) both, embBob 2.4s .7s ease-in-out infinite; filter: drop-shadow(0 10px 0 rgba(0,0,0,.35)); }
+.op-emb { width: clamp(100px, min(34vw, 25vh), 300px); margin: 0 0 -14px; transform-origin: 50% 90%; animation: embIn .7s cubic-bezier(.2,1.6,.4,1) both, embBob 2.4s .7s ease-in-out infinite; filter: drop-shadow(0 10px 0 rgba(0,0,0,.35)); }
 .op-emb svg { width: 100%; height: auto; display: block; }
 @keyframes embIn { from { transform: scale(.2) rotate(-30deg); opacity: 0; } }
 @keyframes embBob { 50% { transform: translateY(-6px) rotate(3deg); } }
@@ -1324,8 +1325,16 @@ body:has(#tut:not([hidden])) .console, body:has(#tut:not([hidden])) .cmd { displ
 @keyframes ctpop{from{transform:scale(.6) rotate(-12deg);opacity:0}to{transform:none;opacity:1}}
 img[src^="data:image/webp"]{object-fit:contain;background:transparent!important}
 .evk img.sil { filter: brightness(0) invert(1) opacity(.55) drop-shadow(0 0 8px rgba(212,255,58,.55)) !important; }
+#bootCover{position:fixed;inset:0;z-index:99998;background:#0E0B22;display:grid;place-items:center;transition:opacity .35s ease}
+#bootCover img{width:min(30vmin,200px);animation:bcpulse 1s ease-in-out infinite alternate}
+#bootCover.off{opacity:0;pointer-events:none}
+@keyframes bcpulse{from{transform:scale(.94) rotate(-4deg)}to{transform:scale(1.04) rotate(3deg)}}
 </style>
 
+<div id="bootCover"><img src="__EMBLEM_URI__" alt=""></div>
+<script>(function(){var c=document.getElementById('bootCover'),done=false;function off(){if(done)return;done=true;c.classList.add('off');setTimeout(function(){c.remove()},450)}window.__bootOff=off;
+var f=(document.fonts&&document.fonts.ready)?document.fonts.ready:Promise.resolve(),l=new Promise(function(r){if(document.readyState==='complete')r();else addEventListener('load',r)});
+Promise.all([f,l]).then(function(){return document.fonts?document.fonts.ready:0}).then(function(){requestAnimationFrame(function(){requestAnimationFrame(function(){setTimeout(off,120)})})});setTimeout(off,6000)})();</script>
 <div id="app">
   <header class="bar">
     <div class="logo"><span class="lg-emb"><!--EMBLEM--></span><b>RHYME MONSTERS<i>/</i></b><span>ライム・モンスターズ</span></div>
