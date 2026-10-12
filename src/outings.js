@@ -505,10 +505,12 @@ function coach(target, text, opt = {}) {
 function coachPlace() {
   const C = $('coach'), sp = C.querySelector('.cb-spot'), bub = C.querySelector('.cb-bub'), el = typeof ONB.target === 'string' ? document.querySelector(ONB.target) : ONB.target;
   const R = el && el.getBoundingClientRect(), H = innerHeight;
-  if (!R || !R.width) { sp.hidden = true; bub.style.top = '38%'; bub.style.bottom = 'auto'; C.classList.add('dim'); return; }
+  if (!R || !R.width) { sp.hidden = true; bub.style.top = '38%'; bub.style.bottom = 'auto'; bub.style.left = ''; bub.style.transform = ''; C.classList.add('dim'); return; }
   C.classList.remove('dim'); sp.hidden = false; const pad = 8;
   Object.assign(sp.style, { left: R.left - pad + 'px', top: R.top - pad + 'px', width: R.width + pad * 2 + 'px', height: R.height + pad * 2 + 'px' });
   if (R.top > H * .5) { bub.style.top = 'auto'; bub.style.bottom = (H - R.top + 22) + 'px'; bub.dataset.arrow = 'down'; } else { bub.style.bottom = 'auto'; bub.style.top = (R.bottom + 22) + 'px'; bub.dataset.arrow = 'up'; }
+  { const W = innerWidth, bw = bub.offsetWidth || 340, cx = R.left + R.width / 2, left = Math.max(12, Math.min(W - bw - 12, cx - bw / 2));
+    bub.style.left = left + 'px'; bub.style.transform = 'none'; bub.style.setProperty('--ax', Math.max(22, Math.min(bw - 22, cx - left)) + 'px'); }
 }
 function coachHide() { $('coach').hidden = true; ONB.target = null; }
 function startOnb() { ONB.step = 0; ONB.sub = ''; clearInterval(ONB.t); ONB.t = setInterval(onbTick, 250); onbEnter(0); }

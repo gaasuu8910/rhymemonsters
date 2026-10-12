@@ -1240,7 +1240,7 @@ body:has(#tut:not([hidden])) .console, body:has(#tut:not([hidden])) .cmd { displ
 .coach.dim { background: rgba(8,6,20,.62); pointer-events: auto; }
 .cb-spot { position: fixed; border-radius: 14px; box-shadow: 0 0 0 9999px rgba(8,6,20,.62); border: 3px solid #D4FF3A; transition: all .25s ease; animation: tutRing 1s ease-in-out infinite alternate; }
 .cb-bub { position: fixed; left: 50%; transform: translateX(-50%); width: min(340px, calc(100vw - 32px)); box-sizing: border-box; background: #fff; color: #0E0B22; border-radius: 16px; border: 3px solid #0E0B22; box-shadow: 6px 6px 0 #FF4D1A; padding: 12px 16px 14px; pointer-events: auto; animation: tutIn .3s ease; }
-.cb-bub[data-arrow="down"]::after, .cb-bub[data-arrow="up"]::after { content: ""; position: absolute; left: 50%; width: 16px; height: 16px; background: #fff; border: 3px solid #0E0B22; transform: translateX(-50%) rotate(45deg); }
+.cb-bub[data-arrow="down"]::after, .cb-bub[data-arrow="up"]::after { content: ""; position: absolute; left: var(--ax, 50%); width: 16px; height: 16px; background: #fff; border: 3px solid #0E0B22; transform: translateX(-50%) rotate(45deg); }
 .cb-bub[data-arrow="down"]::after { bottom: -11px; border-top: 0; border-left: 0; } .cb-bub[data-arrow="up"]::after { top: -11px; border-bottom: 0; border-right: 0; }
 .cb-n { font: 700 10px var(--f-mono); letter-spacing: .12em; color: #7A2BFF; }
 .cb-t { margin: 4px 0 0; font: 400 18px/1.4 var(--f-jp); } .cb-t b { color: #FF4D1A; font-weight: 400; } .cb-t small { display: block; font: 700 11px var(--f-body); color: #555; margin-top: 4px; }
@@ -1350,6 +1350,16 @@ img[src^="data:image/webp"]{object-fit:contain;background:transparent!important}
   body.battle .slam { top: 22%; max-width: calc(100% - 40px); }
   body.battle .slam .big { font-size: clamp(38px, 4.2vw, 80px); }
   body.battle #answer { font-size: 22px; }
+  /* hub menu: one tidy panel — chips row, ENDLESS + 今日の5韻, then three equal buttons */
+  .cmd { right: clamp(24px, 3vw, 56px) !important; bottom: clamp(22px, 5vh, 48px) !important; width: min(640px, 44vw); display: grid !important; grid-template-columns: repeat(3, minmax(0, 1fr)) !important; gap: 14px !important; justify-items: stretch !important; align-items: stretch; }
+  .cmd::before { top: -40px !important; left: -70px !important; right: calc(-1 * clamp(24px, 3vw, 56px) - 10px) !important; bottom: calc(-1 * clamp(22px, 5vh, 48px) - 10px) !important; width: auto !important; height: auto !important; clip-path: polygon(12% 0, 100% 0, 100% 100%, 0 100%) !important; }
+  .cmd::after { right: 0; bottom: -40px; }
+  .cmd > .chips2 { grid-column: 1 / -1 !important; justify-self: stretch; justify-content: flex-start; gap: 8px; }
+  .cmd > .cmd-duo { grid-column: 1 / -1 !important; justify-self: stretch; grid-template-columns: 1.45fr 1fr; gap: 14px; }
+  .cmd .ci { --x: 0px !important; --r: -1.5deg !important; justify-items: start; text-align: left; padding: 12px 16px 10px !important; min-width: 0; }
+  .cmd .ci:hover, .cmd .ci:focus-visible { transform: rotate(-1.5deg) translateY(-3px) scale(1.03) !important; }
+  .cmd > .ci b { font-size: clamp(20px, 1.7vw, 26px) !important; }
+  .cmd .cmd-duo .ci { padding: 14px 18px 12px !important; }
   /* tutorial: the mock screen on the left, the words + button on the right */
   .tut { grid-template-columns: minmax(0, 1fr) minmax(380px, 540px) minmax(0, .25fr); grid-template-rows: auto minmax(0, 1fr) auto auto minmax(0, 1fr); column-gap: clamp(28px, 4vw, 72px); row-gap: 18px; padding: 18px 28px 28px; }
   .tut-top { grid-column: 1 / -1; grid-row: 1; }
@@ -7319,10 +7329,12 @@ function coach(target, text, opt = {}) {
 function coachPlace() {
   const C = $('coach'), sp = C.querySelector('.cb-spot'), bub = C.querySelector('.cb-bub'), el = typeof ONB.target === 'string' ? document.querySelector(ONB.target) : ONB.target;
   const R = el && el.getBoundingClientRect(), H = innerHeight;
-  if (!R || !R.width) { sp.hidden = true; bub.style.top = '38%'; bub.style.bottom = 'auto'; C.classList.add('dim'); return; }
+  if (!R || !R.width) { sp.hidden = true; bub.style.top = '38%'; bub.style.bottom = 'auto'; bub.style.left = ''; bub.style.transform = ''; C.classList.add('dim'); return; }
   C.classList.remove('dim'); sp.hidden = false; const pad = 8;
   Object.assign(sp.style, { left: R.left - pad + 'px', top: R.top - pad + 'px', width: R.width + pad * 2 + 'px', height: R.height + pad * 2 + 'px' });
   if (R.top > H * .5) { bub.style.top = 'auto'; bub.style.bottom = (H - R.top + 22) + 'px'; bub.dataset.arrow = 'down'; } else { bub.style.bottom = 'auto'; bub.style.top = (R.bottom + 22) + 'px'; bub.dataset.arrow = 'up'; }
+  { const W = innerWidth, bw = bub.offsetWidth || 340, cx = R.left + R.width / 2, left = Math.max(12, Math.min(W - bw - 12, cx - bw / 2));
+    bub.style.left = left + 'px'; bub.style.transform = 'none'; bub.style.setProperty('--ax', Math.max(22, Math.min(bw - 22, cx - left)) + 'px'); }
 }
 function coachHide() { $('coach').hidden = true; ONB.target = null; }
 function startOnb() { ONB.step = 0; ONB.sub = ''; clearInterval(ONB.t); ONB.t = setInterval(onbTick, 250); onbEnter(0); }
