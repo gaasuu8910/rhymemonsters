@@ -264,6 +264,7 @@ function showNext() { return; if (!V.next || G.state !== 'kara') return; const n
 function hideKara() { $('jc').hidden = true; $('oppCard').classList.remove('rap'); $('knext').hidden = true; $('kara').hidden = true; answerEl.disabled = sendEl.disabled = true; V.voc.clear(); }
 function startBattle(endless) {
   if (!PRG.tutDone && !PRG.endBest && G.state !== 'tut') { const ps = G.state; G.state = 'tut'; return showTut(() => { G.state = ps; startBattle(endless); }); }
+  track('play', G.daily ? 'daily' : endless === true ? 'endless' : G.mode);
   audioInit(); stopDance(); hideBubble(); genQuiz(); G.endless = endless === true; document.body.classList.toggle('endless', G.endless); G.endScore = 0; $('endScore').textContent = '0';
   { const S = ST(); G.hpMax = G.endless ? 3 + Math.floor(S.h / 40) : Math.round(60 + S.h * .9); G.hp = G.hpMax; G.guards = G.endless && S.d >= 50 ? 1 : 0; G.guardC = 0; G.guardN = guardEvery(S.d); G.origRun = 0; G.skill = 0; G.skillArmed = false; updateSkill(); }
   G.lives = 3; G.best = null; G.hits = 0; G.maxBpm = 0; G.hintLv = 0; G.wordLv = 0; G.maxZone = false; G.boss = false; G.dexNew = 0; G.dres = []; G.eBpm = startBpm(); G.prevBpm = startBpm(); G.upFrom = startBpm(); G.runCoins = PRG.coins || 0; G.runExp = PRG.exp || 0; G.combo = 0; G.maxCombo = 0; G.bScore = 0; G.bStartBar = G.bar; V.n = 0; G.boost = 0; G.boostShown = 0;
@@ -382,6 +383,7 @@ function rankBoard(el, sc, best) {
   rows.forEach((row, k) => { if (k > me) return; setTimeout(() => { row.classList.add('lit'); try { SFX.hit(k === me ? 3 : 1); } catch (e) {} if (k === me) { row.classList.add('me'); if (me >= 4) { SFX.crowd(1 + (me - 4) * .3); confetti(60 + me * 20, { y: 2.5, burst: 6 }); } } }, 300 + k * 200); });
 }
 function endlessOver() {
+  track('endless_end');
   const firstRun = !PRG.onbDone && !(PRG.endBest > 0); if (!firstRun && !PRG.onbDone) PRG.onbDone = true; G.onbPending = firstRun;
   hideKara(); seqMode('hub', { bpm: 92 }); const sc = G.endScore || 0, best = Math.max(PRG.endBest || 0, sc), isBest = sc > (PRG.endBest || 0); PRG.endBest = best; addCoins(Math.round(sc / 40), true); addExp(Math.round(sc / 8)); save();
   $('overEy').textContent = isBest ? 'ENDLESS MC BATTLE · NEW RECORD!!' : 'ENDLESS MC BATTLE · GAME OVER'; $('overTitle').textContent = `${G.hits || 0}韻・最高${G.maxBpm || startBpm()}BPM`;
@@ -412,6 +414,7 @@ function dailyFive() { const d = dayKey(); let h = (d * 2654435761) % 4294967296
 function startDaily() { G.daily = true; G.dailyDone = false; G.dailyList = dailyFive(); startBattle(true); }
 const GRID = g => g >= 4 ? '🟩' : g === 3 ? '🟨' : g > 0 ? '🟧' : '⬛';
 function dailyOver() {
+  track('daily');
   hideKara(); seqMode('hub', { bpm: 92 }); const res = (G.dres || []).slice(0, 5), hits = res.filter(g => g > 0).length, sc = G.endScore || 0, d = dayKey();
   const S0 = PRG.streak || { day: 0, n: 0 }; const first = S0.day !== d; if (first) { PRG.streak = { day: d, n: S0.day === d - 1 ? S0.n + 1 : 1 }; addExp(100 + 20 * hits); addCoins(30 + 10 * hits, true); }
   if (first) PRG.dailyBest = { day: d, sc, grid: res }; save();

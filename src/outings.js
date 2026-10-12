@@ -163,7 +163,7 @@ const GAME_URL = 'https://rhymemonsters.gasugame.workers.dev/';
 // 公開告知ポストのURL（例: https://x.com/アカウント/status/123…）を入れると、みんなの投稿がそのポストの引用になる
 const QUOTE_URL = 'https://x.com/gaasuuquestion/status/2109599977752138084';
 // straight to X: the post composer with the text (+ the launch post as a quote when set)
-function postToX(text) { const a = document.createElement('a'); a.href = 'https://x.com/intent/tweet?text=' + encodeURIComponent(text) + (QUOTE_URL ? '&url=' + encodeURIComponent(QUOTE_URL) : ''); a.target = '_blank'; a.rel = 'noopener'; document.body.appendChild(a); a.click(); a.remove(); }
+function postToX(text) { track('post'); const a = document.createElement('a'); a.href = 'https://x.com/intent/tweet?text=' + encodeURIComponent(text) + (QUOTE_URL ? '&url=' + encodeURIComponent(QUOTE_URL) : ''); a.target = '_blank'; a.rel = 'noopener'; document.body.appendChild(a); a.click(); a.remove(); }
 // the best rhyme you landed this battle / run, for share cards and posts
 function bestLine() { const b = G.best; if (!b) return null; return { w: b.w, a: b.a, lab: (SLAM[b.g] || ['', ''])[0] }; }
 const SH = { tab: 'head', sel: null, prev: null };

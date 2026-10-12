@@ -655,6 +655,7 @@ function showResult(r, ans) {
 }
 
 function battleOver() {
+  track(G.lives <= 0 ? 'lose' : 'quit', G.mode);
   if (typeof bonusStop === 'function') bonusStop();
   hideKara(); $('cont').hidden = true; $('lane').hidden = true;
   BG.hold = false; BG.holdUntil = 0; $('judging').hidden = true; if (G.judgeCtl) { const c = G.judgeCtl; G.judgeCtl = null; c.abort(); }
@@ -767,6 +768,7 @@ function fieldOf(mode, sec) {
   return { slot, W };
 }
 function showBracket(kind, pc) {
+  if (kind === 'win' || kind === 'champ') track(kind, G.mode);
   const st = RND(), m = MODE(), sec = G.sp.secret, champNow = kind === 'champ', esc = x => String(x || '').replace(/[<>&]/g, '');
   const { slot, W } = fieldOf(G.mode, sec), done = r => champNow ? r <= 4 : r <= st; // round r (1..4) is decided once you are past it
   const th = bkThumbs([...new Set([G.sp.id, ...[0, 1, 2, 3].map(r => oppFor(G.mode, r, sec).id)])]);
@@ -831,6 +833,7 @@ function toHub() {
 
 /* ---------- evolution / fever ---------- */
 function evolve(target, inDrop) {
+  track('evolve');
   $('skillTip').classList.remove('on');
   document.body.classList.add('evolving'); G.state = 'evolve'; G.evoTo = target; G.fever = !target; G.evoPhase = 'build'; G.evoSpin = 0;
   hideBubble(); $('order').classList.remove('on'); $('combo').hidden = true; answerEl.disabled = sendEl.disabled = true;

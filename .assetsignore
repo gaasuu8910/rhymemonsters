@@ -1,0 +1,9 @@
+worker.js
+wrangler.jsonc
+src
+README.md
+.git
+.gitignore
+.dev.vars
+node_modules
+.wrangler

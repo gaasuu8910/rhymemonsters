@@ -11,6 +11,9 @@ FIGL = sorted(int(f[:-5]) for f in os.listdir(FD) if f.endswith('.webp')) if os.
 FIGD = ','.join(f"{i}:'data:image/webp;base64,{b64(open(f'{FD}/{i}.webp','rb').read())}'" for i in FIGL)
 code = 'const FIG_DATA = {' + FIGD + '};\n' + f"const CHEER_URI = 'data:audio/mpeg;base64,{b64(open('cheer.mp3', 'rb').read())}';\n" + f"const EMBLEM_URI = 'data:image/svg+xml;base64,{b64(EMB)}';\n" + code
 html = r('shell.html').replace('/*__CODE__*/', code).replace('<!--EMBLEM-->', EMB.replace('xmlns="http://www.w3.org/2000/svg" ', 'aria-hidden="true" ', 1))
+# Cloudflare Web Analytics: paste the site token here (Dashboard → Analytics & Logs → Web Analytics)
+CF_BEACON_TOKEN = ''
+html = html.replace('<title>', ('<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon=\'{"token": "%s"}\'></script>\n' % CF_BEACON_TOKEN if CF_BEACON_TOKEN else '') + '<title>', 1)
 html = html.replace('__EMBLEM_URI__', 'data:image/svg+xml;base64,' + b64(EMB))
 html = html.replace('__FAVICON__', 'data:image/svg+xml;base64,' + b64(FAV)).replace('__APPLEICON__', 'data:image/png;base64,' + b64(open('apple-touch-icon.png', 'rb').read()))
 open('../intama.html', 'w').write(html)
