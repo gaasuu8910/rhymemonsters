@@ -439,7 +439,7 @@ function shareCard(o, preview) {
     const BL = o.kind === 'myrhyme' || o.kind === 'endless' ? null : bestLine(); if (BL) { x.textAlign = 'center'; x.font = `400 40px ${FJ}`; x.lineWidth = 10; x.strokeStyle = '#0E0B22'; const t2 = `BEST「${BL.w}」→「${BL.a}」${BL.lab}`; x.strokeText(t2, W / 2, 1232, W - 100); x.fillStyle = AC; x.fillText(t2, W / 2, 1232, W - 100); }
     x.textAlign = 'center'; x.font = `800 40px ${FD}`; x.fillStyle = '#F3EFE6'; { const tw = x.measureText('RHYME MONSTERS / #ライムモンスターズ').width, ex = W / 2 - tw / 2 - 86; if (EMBLEM_IMG.complete && EMBLEM_IMG.naturalWidth) x.drawImage(EMBLEM_IMG, ex, H - 128, 80, 85); x.fillText('RHYME MONSTERS / #ライムモンスターズ', W / 2 + 40, H - 60); }
     const U = GAME_URL, sc = (G.endScore || 0).toLocaleString(), rk = ERANKS[rankIx(G.endScore || 0)];
-    PH.text = o.kind === 'myrhyme' ? `${petName()}（${G.sp.name}）今日の一本🎤\n「${MR.A}」×「${MR.B}」\nあなたはどんな韻を踏む？\n${U}`
+    PH.text = o.kind === 'myrhyme' ? `${petName()}（${G.sp.name}）今日の一本🎤\n「${MR.A}」×「${MR.B}」\nあなたはどんな韻を踏む？\n${U}\n\n#ライムモンスターズ`
       : o.kind === 'champ' ? `${petName()}が${MODES[o.mode || G.mode].cup}で優勝！🏆🎤\n#ライムモンスターズ\nあなたも挑戦する？\n${U}`
       : o.kind === 'endless' ? `${petName()} ${sc}pt ✨\nランク${rk[0]}「${rk[1]}」🎤\nあなたは何点？\n${U}\n\n#ライムモンスターズ`
       : `${petName()}がライムバトル中🎤\n#ライムモンスターズ\nあなたは何点？ ▶ ${U}`;

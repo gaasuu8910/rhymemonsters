@@ -421,7 +421,7 @@ function dailyOver() {
   if (hits >= 4) { confetti(200, { y: 2.5, burst: 8 }); SFX.crowd(1.5); }
 }
 function dailyText() { const b = PRG.dailyBest || { grid: G.dres || [], sc: G.endScore || 0 }, dt = new Date(Date.now() + 9 * 3600e3), k = `${dt.getUTCMonth() + 1}/${dt.getUTCDate()}`;
-  return `#ライモン今日の5韻\n${b.grid.map(GRID).join('')} ${b.grid.filter(g => g > 0).length}/5韻\n${(b.sc || 0).toLocaleString()}pt\nあなたはどのくらい踏める？\n${GAME_URL}\n\n#ライムモンスターズ`; }
+  return `今日の5韻\n${b.grid.map(GRID).join('')} ${b.grid.filter(g => g > 0).length}/5韻\n${(b.sc || 0).toLocaleString()}pt\nあなたはどのくらい踏める？\n${GAME_URL}\n\n#ライムモンスターズ`; }
 
 /* ---------- first-run tutorial: 5 slides, a mock screen, the spot to look at glows ---------- */
 const TUT = [
