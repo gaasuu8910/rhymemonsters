@@ -231,6 +231,7 @@ function camDefaults() {
   Cam.h = H; Cam.base = (Math.pow(Math.max(H, R * 1.15), .72) * 2.7 + 3.4) * (narrow ? 1.5 : 1) * clamp(560 / h, 1, 1.45);
   Cam.baseTy = H * .46 + (narrow ? .2 : 0); Cam.tTgt.set(0, Cam.baseTy, 0);
 }
+const WIDE_MQ = matchMedia('(min-width: 1000px) and (min-aspect-ratio: 5/4)');
 function resize() {
   const w = stageEl.clientWidth, h = stageEl.clientHeight; if (!w || !h) return;
   renderer.setSize(w, h, false); if (composer) { composer.setSize(w, h); } camera.aspect = w / h; camera.updateProjectionMatrix();
@@ -961,7 +962,7 @@ function loopBody(now) {
   camera.position.x += (Math.random() - .5) * shk; camera.position.y += (Math.random() - .5) * shk;
   camera.lookAt(Cam.tgt);
   { const w = stageEl.clientWidth, h = stageEl.clientHeight, narrow = w / h < 1.1, bt = document.body.classList.contains('battle') || G.state === 'bonus', hub = G.state === 'idle' && !document.body.classList.contains('outing') && !OP.on;
-    const wy = narrow ? (bt ? Math.round(h * .11) : hub ? Math.round(h * .23) : 0) : 0, wx = !narrow && hub ? Math.round(w * .08) : 0;
+    const wy = narrow ? (bt ? Math.round(h * .11) : hub ? Math.round(h * .23) : 0) : 0, wx = !narrow && hub ? Math.round(w * .08) : (WIDE_MQ.matches && !$('shop').hidden ? Math.round($('shop').offsetWidth / 2) : 0);   // PC shop: keep the monster clear of the side panel
     { const z = narrow && hub ? .9 : 1; if (camera.zoom !== z) { camera.zoom = z; camera.updateProjectionMatrix(); } }
     const cv0 = camera.view && camera.view.enabled ? camera.view : null; if (wy !== (cv0 ? cv0.offsetY : 0) || wx !== (cv0 ? cv0.offsetX : 0)) { if (wy || wx) camera.setViewOffset(w, h, wx, wy, w, h); else camera.clearViewOffset(); } }
 

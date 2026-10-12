@@ -1329,6 +1329,37 @@ img[src^="data:image/webp"]{object-fit:contain;background:transparent!important}
 #bootCover img{width:min(30vmin,200px);animation:bcpulse 1s ease-in-out infinite alternate}
 #bootCover.off{opacity:0;pointer-events:none}
 @keyframes bcpulse{from{transform:scale(.94) rotate(-4deg)}to{transform:scale(1.04) rotate(3deg)}}
+/* ---------- PC (wide) battle: stage on the left, lyric panel + input on the right ---------- */
+.bpanel { display: none; }
+@media (min-width: 1000px) and (min-aspect-ratio: 5/4) {
+  :root { --bp: clamp(400px, 34vw, 560px); }
+  body.battle #playView { grid-template-columns: minmax(0, 1fr) var(--bp); grid-template-rows: minmax(0, 1fr) auto; }
+  body.battle .stage { grid-column: 1; grid-row: 1 / 3; }
+  body.battle .bpanel { display: grid; grid-column: 2; grid-row: 1; min-height: 0; align-content: center; gap: 18px; padding: 22px 22px 10px; position: relative; overflow: hidden;
+    background: repeating-linear-gradient(-28deg, rgba(212,255,58,.035) 0 16px, transparent 16px 40px), linear-gradient(180deg, #151036 0%, #0E0B22 100%); border-left: 2px solid #2f2860; }
+  body.battle .console { grid-column: 2; grid-row: 2; border-top: 0; border-left: 2px solid #2f2860; background: #0E0B22; padding: 10px 22px 22px; }
+  .bp-head { position: absolute; left: 22px; right: 22px; top: 18px; display: grid; gap: 4px; }
+  .bp-head b { font: 800 12px var(--f-mono); letter-spacing: .24em; color: #D4FF3A; }
+  .bp-head span { font: 700 13px var(--f-body); color: var(--mute); }
+  .bpanel .kara { position: static !important; transform: none !important; width: auto !important; left: auto !important; bottom: auto !important; gap: 16px !important; pointer-events: auto; }
+  .bpanel .kl { padding: 14px 16px 10px !important; border-left-width: 5px !important; border-radius: 0 10px 10px 0; background: rgba(255,255,255,.04) !important; }
+  .bpanel .kl .m { font-size: clamp(22px, 2vw, 32px) !important; }
+  .bpanel .kl .m em { font-size: 10px; }
+  .bpanel .kl .kt { font-size: 13px !important; }
+  .bpanel .khint { justify-self: stretch; transform: none; box-shadow: 4px 4px 0 var(--flare); }
+  body.battle .slam { top: 22%; max-width: calc(100% - 40px); }
+  body.battle .slam .big { font-size: clamp(38px, 4.2vw, 80px); }
+  body.battle #answer { font-size: 22px; }
+  /* shop: a column on the right, the monster stays in view on the left */
+  .shop { left: auto !important; right: 0; top: 0; bottom: 0; width: clamp(380px, 32vw, 520px); max-height: none !important; background: rgba(14,11,34,.95) !important; border-left: 2px solid #2f2860; padding: 18px 18px 16px !important; align-content: start; grid-template-rows: auto auto minmax(0, 1fr) auto auto; overflow: hidden; }
+  .sh-grid { display: grid !important; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)) !important; overflow-x: hidden !important; overflow-y: auto !important; max-height: none !important; align-content: start; min-height: 0; }
+  .sh-tabs { flex-wrap: wrap; }
+  .sh-stats { grid-template-columns: 1fr !important; }
+  body.battle:has(#overModal:not([hidden])) #playView, body.battle:has(#verdict:not([hidden])) #playView { grid-template-columns: minmax(0, 1fr) 0; }
+  body.battle:has(#overModal:not([hidden])) .bpanel, body.battle:has(#overModal:not([hidden])) .console,
+  body.battle:has(#verdict:not([hidden])) .bpanel, body.battle:has(#verdict:not([hidden])) .console { display: none !important; }
+  body.battle:has(#overModal:not([hidden])) .stage, body.battle:has(#verdict:not([hidden])) .stage { grid-column: 1 / 3; }
+}
 </style>
 
 <div id="bootCover"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0xMCAtMzAgNDQwIDQ3MCI+PGRlZnM+PGNsaXBQYXRoIGlkPSJybUhlYWQiPjxyZWN0IHg9IjExOCIgeT0iNzAiIHdpZHRoPSIxNjQiIGhlaWdodD0iMTcyIiByeD0iODIiLz48L2NsaXBQYXRoPjwvZGVmcz48ZyB0cmFuc2Zvcm09InJvdGF0ZSgtMTYgMjAwIDIxMCkiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+IDxnIHN0cm9rZT0iI0YzRUZFNiIgc3Ryb2tlLXdpZHRoPSIzMiIgZmlsbD0iI0YzRUZFNiI+IDxwYXRoIGQ9Ik0xNTQgMTAwIEMxMjAgNzIgMTA4IDQyIDEyMCAxMiBDMTM2IDQ0IDE2MiA2NCAxODQgNzYgWiIvPiA8cGF0aCBkPSJNMjQ2IDEwMCBDMjgwIDcyIDI5MiA0MiAyODAgMTIgQzI2NCA0NCAyMzggNjQgMjE2IDc2IFoiLz4gPHJlY3QgeD0iMTE4IiB5PSI3MCIgd2lkdGg9IjE2NCIgaGVpZ2h0PSIxNzIiIHJ4PSI4MiIvPiA8cGF0aCBkPSJNMTUwIDI1OCBMMjUwIDI1OCBMMjI0IDM4OCBRMjAwIDQwMiAxNzYgMzg4IFoiLz4gPHBhdGggZD0iTTI5NiA5OCBDMzU2IDEzMiAzNjQgMjAwIDMxMiAyNTAgQzMzMCAxOTAgMzI2IDE0NiAyOTYgOTggWiIvPiA8cGF0aCBkPSJNMzMyIDU2IEM0MDIgMTA4IDQwOCAyMTQgMzQ2IDI4MCBDMzc4IDIwNCAzNzIgMTIyIDMzMiA1NiBaIi8+IDwvZz4gPHBhdGggZD0iTTE1NCAxMDAgQzEyMCA3MiAxMDggNDIgMTIwIDEyIEMxMzYgNDQgMTYyIDY0IDE4NCA3NiBaIiBmaWxsPSIjRDRGRjNBIiBzdHJva2U9IiMwRTBCMjIiIHN0cm9rZS13aWR0aD0iOSIvPiA8cGF0aCBkPSJNMjQ2IDEwMCBDMjgwIDcyIDI5MiA0MiAyODAgMTIgQzI2NCA0NCAyMzggNjQgMjE2IDc2IFoiIGZpbGw9IiNENEZGM0EiIHN0cm9rZT0iIzBFMEIyMiIgc3Ryb2tlLXdpZHRoPSI5Ii8+IDxyZWN0IHg9IjExOCIgeT0iNzAiIHdpZHRoPSIxNjQiIGhlaWdodD0iMTcyIiByeD0iODIiIGZpbGw9IiMwRTBCMjIiLz4gPGcgY2xpcC1wYXRoPSJ1cmwoI3JtSGVhZCkiIHN0cm9rZT0iIzJBMjU1MCIgc3Ryb2tlLXdpZHRoPSI1IiBmaWxsPSJub25lIj4gPHBhdGggZD0iTTEwMCA5MiBIMzAwIE0xMDAgMTA4IEgzMDAiLz4gPHBhdGggZD0iTTE1MCA2MCBWMTEyIE0xNzUgNjAgVjExMiBNMjAwIDYwIFYxMTIgTTIyNSA2MCBWMTEyIE0yNTAgNjAgVjExMiIvPiA8L2c+IDxwYXRoIGQ9Ik0xNDIgMTIyIEwxODggMTM4IEwxODIgMTUyIEwxNDYgMTQxIFoiIGZpbGw9IiNENEZGM0EiLz4gPHBhdGggZD0iTTI1OCAxMjIgTDIxMiAxMzggTDIxOCAxNTIgTDI1NCAxNDEgWiIgZmlsbD0iI0Q0RkYzQSIvPiA8cGF0aCBkPSJNMTM0IDE2MiBRMjAwIDE5MCAyNjYgMTYyIFEyNjAgMjIyIDIwMCAyMjQgUTE0MCAyMjIgMTM0IDE2MiBaIiBmaWxsPSIjRkY0RDFBIi8+IDxwYXRoIGQ9Ik0xNDIgMTY2IEwxNTEgMTg4IEwxNjEgMTcwIFogTTE2NyAxNzMgTDE3OCAyMDIgTDE5MCAxNzYgWiBNMjEwIDE3NiBMMjIyIDIwMiBMMjMzIDE3MyBaIE0yMzkgMTcwIEwyNDkgMTg4IEwyNTggMTY2IFoiIGZpbGw9IiNGM0VGRTYiLz4gPHBhdGggZD0iTTE1NiAyMDUgTDE2NSAxOTAgTDE3NCAyMTAgWiBNMTkyIDIxNiBMMjAwIDIwMCBMMjA4IDIxNiBaIE0yMjYgMjEwIEwyMzUgMTkwIEwyNDQgMjA1IFoiIGZpbGw9IiNGM0VGRTYiLz4gPHJlY3QgeD0iMTE4IiB5PSI3MCIgd2lkdGg9IjE2NCIgaGVpZ2h0PSIxNzIiIHJ4PSI4MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMEUwQjIyIiBzdHJva2Utd2lkdGg9IjkiLz4gPHJlY3QgeD0iMTMwIiB5PSIyMzYiIHdpZHRoPSIxNDAiIGhlaWdodD0iMjgiIHJ4PSI4IiBmaWxsPSIjRkY0RDFBIiBzdHJva2U9IiMwRTBCMjIiIHN0cm9rZS13aWR0aD0iOSIvPiA8cGF0aCBkPSJNMTUwIDI2NCBMMjUwIDI2NCBMMjI0IDM4OCBRMjAwIDQwMiAxNzYgMzg4IFoiIGZpbGw9IiMwRTBCMjIiIHN0cm9rZT0iIzBFMEIyMiIgc3Ryb2tlLXdpZHRoPSI5Ii8+IDxwYXRoIGQ9Ik0xNjYgMjgwIEwxODAgMjgwIEwxNzEgMzcwIFExNjQgMzY2IDE2MSAzNjAgWiIgZmlsbD0iI0YzRUZFNiIgb3BhY2l0eT0iLjg1Ii8+IDxwYXRoIGQ9Ik0yOTYgOTggQzM1NiAxMzIgMzY0IDIwMCAzMTIgMjUwIEMzMzAgMTkwIDMyNiAxNDYgMjk2IDk4IFoiIGZpbGw9IiNGRjREMUEiIHN0cm9rZT0iIzBFMEIyMiIgc3Ryb2tlLXdpZHRoPSI4Ii8+IDxwYXRoIGQ9Ik0zMzIgNTYgQzQwMiAxMDggNDA4IDIxNCAzNDYgMjgwIEMzNzggMjA0IDM3MiAxMjIgMzMyIDU2IFoiIGZpbGw9IiNENEZGM0EiIHN0cm9rZT0iIzBFMEIyMiIgc3Ryb2tlLXdpZHRoPSI4Ii8+IDwvZz4gPC9zdmc+" alt=""></div>
@@ -1622,6 +1653,7 @@ Promise.all([f,l]).then(function(){return document.fonts?document.fonts.ready:0}
       </div>
     </div>
 
+    <aside class="bpanel" id="bpanel" aria-label="リリック"><div class="bp-head"><b>RHYME BATTLE</b><span>相手の最後の言葉と母音をそろえて返せ</span></div></aside>
     <div class="console">
       <div class="row"><div class="timer" id="timer"><i id="timerBar"></i></div><span class="tnum" id="tnum">10.0</span></div>
       <div class="row">
@@ -5426,6 +5458,7 @@ function camDefaults() {
   Cam.h = H; Cam.base = (Math.pow(Math.max(H, R * 1.15), .72) * 2.7 + 3.4) * (narrow ? 1.5 : 1) * clamp(560 / h, 1, 1.45);
   Cam.baseTy = H * .46 + (narrow ? .2 : 0); Cam.tTgt.set(0, Cam.baseTy, 0);
 }
+const WIDE_MQ = matchMedia('(min-width: 1000px) and (min-aspect-ratio: 5/4)');
 function resize() {
   const w = stageEl.clientWidth, h = stageEl.clientHeight; if (!w || !h) return;
   renderer.setSize(w, h, false); if (composer) { composer.setSize(w, h); } camera.aspect = w / h; camera.updateProjectionMatrix();
@@ -6156,7 +6189,7 @@ function loopBody(now) {
   camera.position.x += (Math.random() - .5) * shk; camera.position.y += (Math.random() - .5) * shk;
   camera.lookAt(Cam.tgt);
   { const w = stageEl.clientWidth, h = stageEl.clientHeight, narrow = w / h < 1.1, bt = document.body.classList.contains('battle') || G.state === 'bonus', hub = G.state === 'idle' && !document.body.classList.contains('outing') && !OP.on;
-    const wy = narrow ? (bt ? Math.round(h * .11) : hub ? Math.round(h * .23) : 0) : 0, wx = !narrow && hub ? Math.round(w * .08) : 0;
+    const wy = narrow ? (bt ? Math.round(h * .11) : hub ? Math.round(h * .23) : 0) : 0, wx = !narrow && hub ? Math.round(w * .08) : (WIDE_MQ.matches && !$('shop').hidden ? Math.round($('shop').offsetWidth / 2) : 0);   // PC shop: keep the monster clear of the side panel
     { const z = narrow && hub ? .9 : 1; if (camera.zoom !== z) { camera.zoom = z; camera.updateProjectionMatrix(); } }
     const cv0 = camera.view && camera.view.enabled ? camera.view : null; if (wy !== (cv0 ? cv0.offsetY : 0) || wx !== (cv0 ? cv0.offsetX : 0)) { if (wy || wx) camera.setViewOffset(w, h, wx, wy, w, h); else camera.clearViewOffset(); } }
 
@@ -7541,6 +7574,9 @@ setMonster(G.sp, false); G.state = 'title';
 updateHud();
 new ResizeObserver(resize).observe(stageEl); resize();
 opSetup();
+{ const mq = matchMedia('(min-width: 1000px) and (min-aspect-ratio: 5/4)'), kara = $('kara'), home = kara.nextElementSibling;
+  const place = () => { if (mq.matches) { if (kara.parentElement !== $('bpanel')) $('bpanel').appendChild(kara); } else if (kara.parentElement !== stageEl) stageEl.insertBefore(kara, home); };
+  place(); (mq.addEventListener ? mq.addEventListener('change', place) : mq.addListener(place)); }
 requestAnimationFrame(loop);
 window.__game = { onbEnter, SFX, CHEER, FITS, LEXR, playEnding, endlessOver, renderTree, makeThumbs, AIQ, QBY, pickWord, branchTarget, secretCount, PRG, MODES, OPP, OPPN, loadMode, showModeSelect, showClear, showVS, REEL, STAGEBG, ST, statsOf, BEAT, beatTap, beatGrid, LS, PH, save, lnDown, lnUp, showBracket, verdict, TRACKS, SP_TRACK, G, V, BY, SP, setMonster: (s, p) => { setMonster(s, p); camDefaults(); camReset(); }, judge, Seq, startBattle, reveal, evolve, showTab, tapMonster, startDance, A, get foods() { return foods; } };
 
