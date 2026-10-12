@@ -127,7 +127,9 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--flare); out
 .bubble { position: absolute; left: 50%; top: 22%; transform: translate(-50%, 0) skewX(-6deg) scale(.85); opacity: 0; z-index: 5; background: var(--bone); color: var(--ink); padding: 10px 22px 12px; box-shadow: 6px 6px 0 var(--ink); transition: opacity .15s, transform .3s cubic-bezier(.3,1.7,.5,1); text-align: center; max-width: calc(100% - 32px); pointer-events: none; }
 .bubble.on { opacity: 1; transform: translate(-50%, 0) skewX(-6deg) scale(1); }
 .bubble .who { font: 600 9px var(--f-mono); letter-spacing: .16em; color: var(--flare); text-transform: uppercase; }
-.word { font: 400 clamp(28px, 5vw, 52px)/1.2 var(--f-jp); letter-spacing: .02em; overflow-wrap: anywhere; }
+.word { font: 400 clamp(28px, 5vw, 52px)/1.2 var(--f-jp); letter-spacing: .02em; word-break: keep-all; overflow-wrap: anywhere; line-break: strict; }
+.bubble .word.long { font-size: clamp(24px, 3.8vw, 42px); }
+.bubble { width: max-content; box-sizing: border-box; }   /* break only between phrases, never inside a word */
 .bubble.chat .word { font: 900 clamp(15px, 2.2vw, 19px)/1.4 var(--f-body); }
 .order { position: absolute; left: 50%; top: calc(22% - 30px); transform: translateX(-50%) rotate(-4deg) scale(0); z-index: 6; background: var(--flare); color: var(--ink); font: 400 20px var(--f-jp); padding: 4px 14px 6px; white-space: nowrap; box-shadow: 4px 4px 0 var(--cobalt); pointer-events: none; transition: transform .25s cubic-bezier(.3,1.9,.5,1); }
 .order.on { transform: translateX(-50%) rotate(-4deg) scale(1); animation: ordw .25s steps(2) infinite .3s; }
@@ -5707,7 +5709,7 @@ function showBanner(html, ms) { const b = $('banner'); b.innerHTML = html; b.cla
   banner.t = setTimeout(() => { b.classList.remove('on'); setTimeout(() => { banner.busy = false; const n = banner.q.shift(); if (n) showBanner(n[0], n[1]); }, 220); }, ms); }
 function tapPop(cx, cy, text, size = 26, color) { const r = stageEl.getBoundingClientRect(); const d = document.createElement('div'); d.className = 'tappop'; d.textContent = text; d.style.left = (cx - r.left) + 'px'; d.style.top = (cy - r.top) + 'px'; d.style.fontSize = size + 'px'; if (color) d.style.webkitTextStrokeColor = color; stageEl.appendChild(d); setTimeout(() => d.remove(), 950); }
 function gaugePop(text, minus) { const g = $('gauge'), d = document.createElement('div'); d.className = 'gpop' + (minus ? ' minus' : ''); d.textContent = text.startsWith('+') ? '−' + text.slice(1).replace('%', '% HP') : text.startsWith('-') ? '+' + text.slice(1).replace('%', '% HP') : text; d.style.left = clamp((1 - G.bar) * 100, 6, 88) + '%'; g.appendChild(d); setTimeout(() => d.remove(), 1150); }
-function bubble(word, who, chat) { if (chat) return; $('word').textContent = word; $('who').textContent = who; $('bubble').classList.toggle('chat', !!chat); $('bubble').classList.add('on'); }
+function bubble(word, who, chat) { if (chat) return; $('word').textContent = word; $('word').classList.toggle('long', [...String(word)].length > 9); $('who').textContent = who; $('bubble').classList.toggle('chat', !!chat); $('bubble').classList.add('on'); }
 function hideBubble() { $('bubble').classList.remove('on'); }
 const HEART = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#FF3D7F" stroke="#fff" stroke-width="1.5" d="M12 21s-8-5.2-8-11a4.6 4.6 0 0 1 8-3 4.6 4.6 0 0 1 8 3c0 5.8-8 11-8 11z"/></svg>';
 function updateLives() { $('lives').innerHTML = [0, 1, 2].map(i => HEART.replace('<svg', `<svg class="${i < G.lives ? '' : 'lost'}"`)).join(''); }
