@@ -6722,7 +6722,7 @@ function dailyOver() {
   if (hits >= 4) { confetti(200, { y: 2.5, burst: 8 }); SFX.crowd(1.5); }
 }
 function dailyText() { const b = PRG.dailyBest || { grid: G.dres || [], sc: G.endScore || 0 }, dt = new Date(Date.now() + 9 * 3600e3), k = `${dt.getUTCMonth() + 1}/${dt.getUTCDate()}`;
-  return `#ライモン今日の5韻 ${k} 🔥${(PRG.streak || {}).n || 1}日連続\n${b.grid.map(GRID).join('')} ${b.grid.filter(g => g > 0).length}/5韻・${(b.sc || 0).toLocaleString()}pt\nあなたは何韻？ ▶ ${GAME_URL}`; }
+  return `#ライモン今日の5韻\n${b.grid.map(GRID).join('')} ${b.grid.filter(g => g > 0).length}/5韻\n${(b.sc || 0).toLocaleString()}pt\nあなたはどのくらい踏める？\n${GAME_URL}\n\n#ライムモンスターズ`; }
 
 /* ---------- first-run tutorial: 5 slides, a mock screen, the spot to look at glows ---------- */
 const TUT = [
@@ -7145,8 +7145,7 @@ $('prSave').addEventListener('click', async () => {
 });
 $('prX').addEventListener('click', () => {
   const line = (PUNCH[G.sp.id] || PUNCH[0])[PH.punch];
-  let text = PH.text || `「${line}」\n${petName()}（${G.sp.name}）が${MODE().cup}の${ROUND[RND()]}に参戦中🎤\n#ライムモンスターズ`;
-  { const BL = PH.text ? bestLine() : null; text = text + (BL ? `\n今日のベスト韻「${BL.w}」→「${BL.a}」${BL.lab}` : '') + `\nあなたは何点？ ▶ ${GAME_URL}`; }
+  const text = PH.text || `「${line}」\n${petName()}が${MODE().cup}の${ROUND[RND()]}に参戦中🎤\n#ライムモンスターズ\nあなたは何点？ ▶ ${GAME_URL}`;
   postToX(text); $('prNote').textContent = '画像は「画像を保存」から添付してね';
 });
 $('prBack').addEventListener('click', () => { $('photoResult').hidden = true; if (PH.from === 'over') { PH.from = null; $('overModal').hidden = false; } });
@@ -7199,7 +7198,11 @@ function shareCard(o, preview) {
     if (o.kind !== 'endless') { const S = ST(); x.font = `700 26px ${FM}`; x.textAlign = 'right'; x.fillStyle = '#fff'; STAT_KEYS.forEach(([k, ja, en], i) => x.fillText(`${en} ${S[k]}`, W - 70, 90 + i * 34)); }
     const BL = o.kind === 'myrhyme' || o.kind === 'endless' ? null : bestLine(); if (BL) { x.textAlign = 'center'; x.font = `400 40px ${FJ}`; x.lineWidth = 10; x.strokeStyle = '#0E0B22'; const t2 = `BEST「${BL.w}」→「${BL.a}」${BL.lab}`; x.strokeText(t2, W / 2, 1232, W - 100); x.fillStyle = AC; x.fillText(t2, W / 2, 1232, W - 100); }
     x.textAlign = 'center'; x.font = `800 40px ${FD}`; x.fillStyle = '#F3EFE6'; { const tw = x.measureText('RHYME MONSTERS / #ライムモンスターズ').width, ex = W / 2 - tw / 2 - 86; if (EMBLEM_IMG.complete && EMBLEM_IMG.naturalWidth) x.drawImage(EMBLEM_IMG, ex, H - 128, 80, 85); x.fillText('RHYME MONSTERS / #ライムモンスターズ', W / 2 + 40, H - 60); }
-    PH.text = o.kind === 'myrhyme' ? `${petName()}（${G.sp.name}）が今日の一本を発表🎤\n「${MR.A}」×「${MR.B}」\n#ライモン今日の一本` : o.kind === 'champ' ? `${petName()}（${G.sp.name}）が${MODES[o.mode || G.mode].cup}で優勝！🏆🎤\n#ライムモンスターズ` : o.kind === 'endless' ? `${rankIx(G.endScore || 0) <= 1 ? '初陣！' : ''}${petName()}が ${(G.endScore || 0).toLocaleString()}pt でランク${ERANKS[rankIx(G.endScore || 0)][0]}「${ERANKS[rankIx(G.endScore || 0)][1]}」に！🎤\n#ライムモンスターズ` : `${petName()}（${G.sp.name}）ライムバトル中🎤\n#ライムモンスターズ`;
+    const U = GAME_URL, sc = (G.endScore || 0).toLocaleString(), rk = ERANKS[rankIx(G.endScore || 0)];
+    PH.text = o.kind === 'myrhyme' ? `${petName()}（${G.sp.name}）今日の一本🎤\n「${MR.A}」×「${MR.B}」\nあなたはどんな韻を踏む？\n${U}`
+      : o.kind === 'champ' ? `${petName()}が${MODES[o.mode || G.mode].cup}で優勝！🏆🎤\n#ライムモンスターズ\nあなたも挑戦する？\n${U}`
+      : o.kind === 'endless' ? `${petName()} ${sc}pt ✨\nランク${rk[0]}「${rk[1]}」🎤\nあなたは何点？\n${U}\n\n#ライムモンスターズ`
+      : `${petName()}がライムバトル中🎤\n#ライムモンスターズ\nあなたは何点？ ▶ ${U}`;
     cv2.toBlob(b => { if (preview) { const u = URL.createObjectURL(b); PH.blob = b; return preview(u); } PH.blob = b; PH.url && URL.revokeObjectURL(PH.url); PH.url = URL.createObjectURL(b); $('prImg').src = PH.url; $('prNote').textContent = ''; $('prBack').textContent = 'もどる'; $('photoResult').querySelector('.eyebrow').textContent = o.kind === 'myrhyme' ? 'MY RHYME' : o.kind === 'champ' ? '優勝カード' : o.kind === 'endless' ? 'スコアカード' : 'バトルカード'; renderCardOpts(); $('photoResult').hidden = false; }, 'image/png');
   };
   if (src) { img.onload = draw; img.src = src; } else draw();
