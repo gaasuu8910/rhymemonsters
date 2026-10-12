@@ -159,7 +159,7 @@ $('outLesson').addEventListener('click', () => { $('outModal').hidden = true; op
 /* =========================================================
    服屋 STREET THREADS
    ========================================================= */
-const GAME_URL = 'https://rhymemonsters.rhymemonsters.workers.dev/';
+const GAME_URL = 'https://rhymemonsters.gasugame.workers.dev/';
 // 公開告知ポストのURL（例: https://x.com/アカウント/status/123…）を入れると、みんなの投稿がそのポストの引用になる
 const QUOTE_URL = '';
 // straight to X: the post composer with the text (+ the launch post as a quote when set)

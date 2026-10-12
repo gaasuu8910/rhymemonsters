@@ -1173,7 +1173,7 @@ body:has(#msModal:not([hidden])) .console { display: none !important; }
 .tut-stage { display: grid; grid-template-rows: auto auto; align-content: center; gap: 14px; min-height: 0; align-items: center; justify-items: center; }
 .tm { position: relative; height: min(52vh, 470px); width: auto; max-width: 86vw; aspect-ratio: 9 / 14; border-radius: 22px; border: 3px solid #0E0B22; box-shadow: 0 0 0 2px rgba(255,255,255,.18), 8px 8px 0 #FF4D1A; background: linear-gradient(#18123A, #0B0B14); overflow: hidden; display: grid; grid-template-rows: auto 1fr auto auto auto; padding: 12px; gap: 8px; font-family: var(--f-body); }
 .tm > * { transition: opacity .35s, filter .35s, transform .35s; }
-.tut:not([data-s="0"]) .tm > :not(.hl):not(.tm-pop):not(.tm-rank) { opacity: .22; filter: saturate(.3); }
+.tut:not([data-s="0"]) .tm > :not(.hl):not(.tm-pop):not(.tm-rank):not(.tm-save) { opacity: .22; filter: saturate(.3); }
 .tm .hl { position: relative; z-index: 2; }
 .tm .hl::after, .tm .hl2::after { content: ""; position: absolute; inset: -5px; border-radius: 10px; border: 3px solid #D4FF3A; box-shadow: 0 0 0 4px rgba(212,255,58,.25), 0 0 18px rgba(212,255,58,.6); animation: tutRing 1s ease-in-out infinite alternate; pointer-events: none; }
 @keyframes tutRing { from { transform: scale(1); } to { transform: scale(1.04); } }
@@ -1204,7 +1204,7 @@ body:has(#msModal:not([hidden])) .console { display: none !important; }
 .tm-rank i { font: 800 15px/32px var(--f-disp, sans-serif); font-style: normal; text-align: center; border-radius: 6px; background: rgba(255,255,255,.08); color: rgba(255,255,255,.4); }
 .tm-rank i.a { background: #FFC93D; color: #0E0B22; transform: scale(1.3); box-shadow: 0 0 0 2px #0E0B22, 0 0 20px #FFC93D; }
 .tut[data-s="4"] .tm-rank { opacity: 1; transform: translateY(50%) scale(1); }
-.tut[data-s="4"] .tm > :not(.tm-rank) { opacity: .15 !important; }
+.tut[data-s="4"] .tm > :not(.tm-rank):not(.tm-save) { opacity: .15 !important; }
 .tut-cap { display: grid; gap: 4px; text-align: center; min-height: 64px; align-content: start; }
 .tut-cap b { font: 400 clamp(22px, 6.4vw, 30px)/1.25 var(--f-jp); } .tut-cap b em { font-style: normal; color: #D4FF3A; }
 .tut-cap small { font: 700 12px var(--f-body); color: rgba(255,255,255,.65); }
@@ -1350,6 +1350,16 @@ img[src^="data:image/webp"]{object-fit:contain;background:transparent!important}
   body.battle .slam { top: 22%; max-width: calc(100% - 40px); }
   body.battle .slam .big { font-size: clamp(38px, 4.2vw, 80px); }
   body.battle #answer { font-size: 22px; }
+  /* tutorial: the mock screen on the left, the words + button on the right */
+  .tut { grid-template-columns: minmax(0, 1fr) minmax(380px, 540px) minmax(0, .25fr); grid-template-rows: auto minmax(0, 1fr) auto auto minmax(0, 1fr); column-gap: clamp(28px, 4vw, 72px); row-gap: 18px; padding: 18px 28px 28px; }
+  .tut-top { grid-column: 1 / -1; grid-row: 1; }
+  .tut-stage { display: contents; }
+  .tut .tm { grid-column: 1; grid-row: 2 / 6; justify-self: end; align-self: center; height: min(calc(100vh - 140px), 560px); max-width: none; }
+  .tut-cap { grid-column: 2; grid-row: 2; align-self: end; text-align: left; justify-items: start; min-height: 0; gap: 10px; }
+  .tut-cap b { font-size: clamp(30px, 3vw, 44px); }
+  .tut-cap small { font-size: 15px; line-height: 1.6; }
+  .tut-dots { grid-column: 2; grid-row: 3; justify-content: flex-start; }
+  .tut #tutNext { grid-column: 2; grid-row: 4; justify-self: start; width: min(360px, 100%); align-self: start; }
   /* shop: a column on the right, the monster stays in view on the left */
   .shop { left: auto !important; right: 0; top: 0; bottom: 0; width: clamp(380px, 32vw, 520px); max-height: none !important; background: rgba(14,11,34,.95) !important; border-left: 2px solid #2f2860; padding: 18px 18px 16px !important; align-content: start; grid-template-rows: auto auto minmax(0, 1fr) auto auto; overflow: hidden; }
   .sh-grid { display: grid !important; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)) !important; overflow-x: hidden !important; overflow-y: auto !important; max-height: none !important; align-content: start; min-height: 0; }
@@ -1360,6 +1370,7 @@ img[src^="data:image/webp"]{object-fit:contain;background:transparent!important}
   body.battle:has(#verdict:not([hidden])) .bpanel, body.battle:has(#verdict:not([hidden])) .console { display: none !important; }
   body.battle:has(#overModal:not([hidden])) .stage, body.battle:has(#verdict:not([hidden])) .stage { grid-column: 1 / 3; }
 }
+body.evolving .cmd, body.evolving .howto, body.evolving .skill, body.evolving .skill-tip { opacity: 0 !important; pointer-events: none !important; transition: opacity .25s; }
 </style>
 
 <div id="bootCover"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0xMCAtMzAgNDQwIDQ3MCI+PGRlZnM+PGNsaXBQYXRoIGlkPSJybUhlYWQiPjxyZWN0IHg9IjExOCIgeT0iNzAiIHdpZHRoPSIxNjQiIGhlaWdodD0iMTcyIiByeD0iODIiLz48L2NsaXBQYXRoPjwvZGVmcz48ZyB0cmFuc2Zvcm09InJvdGF0ZSgtMTYgMjAwIDIxMCkiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+IDxnIHN0cm9rZT0iI0YzRUZFNiIgc3Ryb2tlLXdpZHRoPSIzMiIgZmlsbD0iI0YzRUZFNiI+IDxwYXRoIGQ9Ik0xNTQgMTAwIEMxMjAgNzIgMTA4IDQyIDEyMCAxMiBDMTM2IDQ0IDE2MiA2NCAxODQgNzYgWiIvPiA8cGF0aCBkPSJNMjQ2IDEwMCBDMjgwIDcyIDI5MiA0MiAyODAgMTIgQzI2NCA0NCAyMzggNjQgMjE2IDc2IFoiLz4gPHJlY3QgeD0iMTE4IiB5PSI3MCIgd2lkdGg9IjE2NCIgaGVpZ2h0PSIxNzIiIHJ4PSI4MiIvPiA8cGF0aCBkPSJNMTUwIDI1OCBMMjUwIDI1OCBMMjI0IDM4OCBRMjAwIDQwMiAxNzYgMzg4IFoiLz4gPHBhdGggZD0iTTI5NiA5OCBDMzU2IDEzMiAzNjQgMjAwIDMxMiAyNTAgQzMzMCAxOTAgMzI2IDE0NiAyOTYgOTggWiIvPiA8cGF0aCBkPSJNMzMyIDU2IEM0MDIgMTA4IDQwOCAyMTQgMzQ2IDI4MCBDMzc4IDIwNCAzNzIgMTIyIDMzMiA1NiBaIi8+IDwvZz4gPHBhdGggZD0iTTE1NCAxMDAgQzEyMCA3MiAxMDggNDIgMTIwIDEyIEMxMzYgNDQgMTYyIDY0IDE4NCA3NiBaIiBmaWxsPSIjRDRGRjNBIiBzdHJva2U9IiMwRTBCMjIiIHN0cm9rZS13aWR0aD0iOSIvPiA8cGF0aCBkPSJNMjQ2IDEwMCBDMjgwIDcyIDI5MiA0MiAyODAgMTIgQzI2NCA0NCAyMzggNjQgMjE2IDc2IFoiIGZpbGw9IiNENEZGM0EiIHN0cm9rZT0iIzBFMEIyMiIgc3Ryb2tlLXdpZHRoPSI5Ii8+IDxyZWN0IHg9IjExOCIgeT0iNzAiIHdpZHRoPSIxNjQiIGhlaWdodD0iMTcyIiByeD0iODIiIGZpbGw9IiMwRTBCMjIiLz4gPGcgY2xpcC1wYXRoPSJ1cmwoI3JtSGVhZCkiIHN0cm9rZT0iIzJBMjU1MCIgc3Ryb2tlLXdpZHRoPSI1IiBmaWxsPSJub25lIj4gPHBhdGggZD0iTTEwMCA5MiBIMzAwIE0xMDAgMTA4IEgzMDAiLz4gPHBhdGggZD0iTTE1MCA2MCBWMTEyIE0xNzUgNjAgVjExMiBNMjAwIDYwIFYxMTIgTTIyNSA2MCBWMTEyIE0yNTAgNjAgVjExMiIvPiA8L2c+IDxwYXRoIGQ9Ik0xNDIgMTIyIEwxODggMTM4IEwxODIgMTUyIEwxNDYgMTQxIFoiIGZpbGw9IiNENEZGM0EiLz4gPHBhdGggZD0iTTI1OCAxMjIgTDIxMiAxMzggTDIxOCAxNTIgTDI1NCAxNDEgWiIgZmlsbD0iI0Q0RkYzQSIvPiA8cGF0aCBkPSJNMTM0IDE2MiBRMjAwIDE5MCAyNjYgMTYyIFEyNjAgMjIyIDIwMCAyMjQgUTE0MCAyMjIgMTM0IDE2MiBaIiBmaWxsPSIjRkY0RDFBIi8+IDxwYXRoIGQ9Ik0xNDIgMTY2IEwxNTEgMTg4IEwxNjEgMTcwIFogTTE2NyAxNzMgTDE3OCAyMDIgTDE5MCAxNzYgWiBNMjEwIDE3NiBMMjIyIDIwMiBMMjMzIDE3MyBaIE0yMzkgMTcwIEwyNDkgMTg4IEwyNTggMTY2IFoiIGZpbGw9IiNGM0VGRTYiLz4gPHBhdGggZD0iTTE1NiAyMDUgTDE2NSAxOTAgTDE3NCAyMTAgWiBNMTkyIDIxNiBMMjAwIDIwMCBMMjA4IDIxNiBaIE0yMjYgMjEwIEwyMzUgMTkwIEwyNDQgMjA1IFoiIGZpbGw9IiNGM0VGRTYiLz4gPHJlY3QgeD0iMTE4IiB5PSI3MCIgd2lkdGg9IjE2NCIgaGVpZ2h0PSIxNzIiIHJ4PSI4MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMEUwQjIyIiBzdHJva2Utd2lkdGg9IjkiLz4gPHJlY3QgeD0iMTMwIiB5PSIyMzYiIHdpZHRoPSIxNDAiIGhlaWdodD0iMjgiIHJ4PSI4IiBmaWxsPSIjRkY0RDFBIiBzdHJva2U9IiMwRTBCMjIiIHN0cm9rZS13aWR0aD0iOSIvPiA8cGF0aCBkPSJNMTUwIDI2NCBMMjUwIDI2NCBMMjI0IDM4OCBRMjAwIDQwMiAxNzYgMzg4IFoiIGZpbGw9IiMwRTBCMjIiIHN0cm9rZT0iIzBFMEIyMiIgc3Ryb2tlLXdpZHRoPSI5Ii8+IDxwYXRoIGQ9Ik0xNjYgMjgwIEwxODAgMjgwIEwxNzEgMzcwIFExNjQgMzY2IDE2MSAzNjAgWiIgZmlsbD0iI0YzRUZFNiIgb3BhY2l0eT0iLjg1Ii8+IDxwYXRoIGQ9Ik0yOTYgOTggQzM1NiAxMzIgMzY0IDIwMCAzMTIgMjUwIEMzMzAgMTkwIDMyNiAxNDYgMjk2IDk4IFoiIGZpbGw9IiNGRjREMUEiIHN0cm9rZT0iIzBFMEIyMiIgc3Ryb2tlLXdpZHRoPSI4Ii8+IDxwYXRoIGQ9Ik0zMzIgNTYgQzQwMiAxMDggNDA4IDIxNCAzNDYgMjgwIEMzNzggMjA0IDM3MiAxMjIgMzMyIDU2IFoiIGZpbGw9IiNENEZGM0EiIHN0cm9rZT0iIzBFMEIyMiIgc3Ryb2tlLXdpZHRoPSI4Ii8+IDwvZz4gPC9zdmc+" alt=""></div>
@@ -6059,7 +6070,7 @@ function toHub() {
 /* ---------- evolution / fever ---------- */
 function evolve(target, inDrop) {
   $('skillTip').classList.remove('on');
-  G.state = 'evolve'; G.evoTo = target; G.fever = !target; G.evoPhase = 'build'; G.evoSpin = 0;
+  document.body.classList.add('evolving'); G.state = 'evolve'; G.evoTo = target; G.fever = !target; G.evoPhase = 'build'; G.evoSpin = 0;
   hideBubble(); $('order').classList.remove('on'); $('combo').hidden = true; answerEl.disabled = sendEl.disabled = true;
   audioInit();
   if (inDrop && Seq.mode === 'drop') { // the chorus is already pumping from the finishing chain: celebrate right on it
@@ -6143,6 +6154,7 @@ function loopBody(now) {
   while (Seq.events.length && Seq.events[0].t <= AT()) onBeat(Seq.events.shift());
 
   karaLoop(); if (typeof outLoop === 'function') outLoop(dt);
+  if (G.state !== 'evolve' && $('evoCard').hidden && document.body.classList.contains('evolving')) document.body.classList.remove('evolving');   // the menus come back once the reveal is over
   if (G.state === 'idle' && G.dancing) { const g = beatGrid(), now = AT(), cur = ((Math.abs(now - g.prev) < Math.abs(g.next - now) ? g.idx - 1 : g.idx) % 4 + 4) % 4, h = $('beatHud'); if (h.dataset.b != cur) { h.dataset.b = cur; h.classList.remove('kick'); void h.offsetWidth; h.classList.add('kick'); } if (BEAT.combo && g.idx - BEAT.last > 3) { BEAT.combo = 0; $('bhN').textContent = ''; h.classList.remove('hot'); } }
   { const fr = Math.floor(T * 30); $('tcode').textContent = `00:${String(Math.floor(fr / 1800)).padStart(2, '0')}:${String(Math.floor(fr / 30) % 60).padStart(2, '0')}:${String(fr % 30).padStart(2, '0')}`;
     $('sceneLbl').textContent = G.state === 'over' ? 'SCENE 07 / REPORT' : G.state === 'evolve' ? `SCENE 05 / ${G.evoTo ? 'EVOLUTION' : 'FEVER'}` : G.state === 'cont' ? 'SCENE 06 / CONTINUE?' : document.body.classList.contains('battle') ? `SCENE 02 / KARAOKE · VERSE ${String(V.n).padStart(2, '0')} · BAR ${Math.max(0, Math.floor((Seq.step - V.s0) / 16) + 1)}/6 · ${Math.round(Seq.bpm)} BPM` : G.dancing ? `SCENE 04 / DANCE · ${Math.round(Seq.bpm)} BPM` : 'SCENE 01 / HUB'; }
@@ -6961,7 +6973,7 @@ $('outLesson').addEventListener('click', () => { $('outModal').hidden = true; op
 /* =========================================================
    服屋 STREET THREADS
    ========================================================= */
-const GAME_URL = 'https://rhymemonsters.rhymemonsters.workers.dev/';
+const GAME_URL = 'https://rhymemonsters.gasugame.workers.dev/';
 // 公開告知ポストのURL（例: https://x.com/アカウント/status/123…）を入れると、みんなの投稿がそのポストの引用になる
 const QUOTE_URL = '';
 // straight to X: the post composer with the text (+ the launch post as a quote when set)

@@ -832,7 +832,7 @@ function toHub() {
 /* ---------- evolution / fever ---------- */
 function evolve(target, inDrop) {
   $('skillTip').classList.remove('on');
-  G.state = 'evolve'; G.evoTo = target; G.fever = !target; G.evoPhase = 'build'; G.evoSpin = 0;
+  document.body.classList.add('evolving'); G.state = 'evolve'; G.evoTo = target; G.fever = !target; G.evoPhase = 'build'; G.evoSpin = 0;
   hideBubble(); $('order').classList.remove('on'); $('combo').hidden = true; answerEl.disabled = sendEl.disabled = true;
   audioInit();
   if (inDrop && Seq.mode === 'drop') { // the chorus is already pumping from the finishing chain: celebrate right on it
@@ -916,6 +916,7 @@ function loopBody(now) {
   while (Seq.events.length && Seq.events[0].t <= AT()) onBeat(Seq.events.shift());
 
   karaLoop(); if (typeof outLoop === 'function') outLoop(dt);
+  if (G.state !== 'evolve' && $('evoCard').hidden && document.body.classList.contains('evolving')) document.body.classList.remove('evolving');   // the menus come back once the reveal is over
   if (G.state === 'idle' && G.dancing) { const g = beatGrid(), now = AT(), cur = ((Math.abs(now - g.prev) < Math.abs(g.next - now) ? g.idx - 1 : g.idx) % 4 + 4) % 4, h = $('beatHud'); if (h.dataset.b != cur) { h.dataset.b = cur; h.classList.remove('kick'); void h.offsetWidth; h.classList.add('kick'); } if (BEAT.combo && g.idx - BEAT.last > 3) { BEAT.combo = 0; $('bhN').textContent = ''; h.classList.remove('hot'); } }
   { const fr = Math.floor(T * 30); $('tcode').textContent = `00:${String(Math.floor(fr / 1800)).padStart(2, '0')}:${String(Math.floor(fr / 30) % 60).padStart(2, '0')}:${String(fr % 30).padStart(2, '0')}`;
     $('sceneLbl').textContent = G.state === 'over' ? 'SCENE 07 / REPORT' : G.state === 'evolve' ? `SCENE 05 / ${G.evoTo ? 'EVOLUTION' : 'FEVER'}` : G.state === 'cont' ? 'SCENE 06 / CONTINUE?' : document.body.classList.contains('battle') ? `SCENE 02 / KARAOKE · VERSE ${String(V.n).padStart(2, '0')} · BAR ${Math.max(0, Math.floor((Seq.step - V.s0) / 16) + 1)}/6 · ${Math.round(Seq.bpm)} BPM` : G.dancing ? `SCENE 04 / DANCE · ${Math.round(Seq.bpm)} BPM` : 'SCENE 01 / HUB'; }
