@@ -1,0 +1,8 @@
+/vendor/*
+  Cache-Control: public, max-age=31536000, immutable
+/lex.js
+  Cache-Control: public, max-age=31536000, immutable
+/figs_s/*
+  Cache-Control: public, max-age=86400
+/cheer.mp3
+  Cache-Control: public, max-age=86400
